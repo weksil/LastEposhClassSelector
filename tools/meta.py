@@ -10,3 +10,13 @@ CLASSES = [  # classId, key, i18n class name key, masteries in game order (maste
 DESC_KEY = {'runemaster':'UI.MasteryPanel_Runemaster_Description','void-knight':'UI.Mastery_VoidKnight_Description','forge-guard':'UI.Mastery_Forge_Guard_Description'}
 BONUS_PREFIX = {'runemaster':'UI.PassiveTree_Panel_Runemaster'}
 LANGS = ['en','de','es','fr','ja','ko','pl','pt','ru','zh']
+
+# Announced but not yet in the game data: shown as "coming in Season 5" tiles until lastepochtools has
+# them. Names are the English ones from the announcement; ids are placeholders, replaced by the real
+# ability ids (and dropped from here) once the season's data is out.
+SEASON = {'n': 'Rage of the Frostborn', 'no': 5, 'start': '2026-10-01'}
+UPCOMING = [
+ ('s5-dreamslash', 'bladedancer', 'Dreamslash'),
+ ('s5-radiant-lance', 'paladin', 'Radiant Lance'),
+ ('s5-tide-elemental', 'shaman', 'Summon Tide Elemental'),
+]

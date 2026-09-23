@@ -1,6 +1,6 @@
 import json, os, re, html
 from html.parser import HTMLParser
-from meta import CLASSES, DESC_KEY, BONUS_PREFIX, LANGS
+from meta import CLASSES, DESC_KEY, BONUS_PREFIX, LANGS, SEASON, UPCOMING
 I18N = {l: json.load(open(f'i18n/{l}.json', encoding='utf-8')) for l in LANGS}
 cls_src = json.load(open('cls_src.json')); mst_src = json.load(open('mst_src.json')); ab = json.load(open('ab_src.json'))
 def icu(s): return s.replace("''", "'") if s else s
@@ -43,6 +43,10 @@ missing = [(l, k) for l in LANGS for k, v in list(names[l].items()) + list(sknam
 print('missing names:', missing[:20])
 meta['names'] = names; meta['desc'] = descs; meta['bonus'] = bonus; meta['sk'] = sknames
 meta['mana'] = {i: a['mana'] for i, a in ab.items()}
+known = {m['key'] for m in meta['masteries']}
+meta['season'] = SEASON
+have = {v.lower() for v in sknames['en'].values()}      # a stub goes by itself once the real skill is in the data
+meta['upcoming'] = [{'id': i, 'm': m, 'n': n} for i, m, n in UPCOMING if m in known and n.lower() not in have]
 with open(f'{OUT}/data/le.js', 'w', encoding='utf-8') as f:
     f.write('/* Last Epoch classes, masteries and skills — generated from lastepochtools.com data (version145). */\n')
     f.write('window.LE=' + json.dumps(meta, ensure_ascii=False, separators=(',', ':')) + ';\n')

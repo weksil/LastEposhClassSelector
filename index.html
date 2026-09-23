@@ -270,6 +270,12 @@ body.elim .elim-only{display:block}
 .tile.locked{opacity:.5;cursor:help}
 .tile.locked img{filter:grayscale(.8)}
 .tile.locked:hover{border-color:rgba(214,90,60,.5)}
+.tile.soon{border-style:dashed;border-color:rgba(156,200,255,.35);background:rgba(18,20,34,.6);cursor:help}
+.tile.soon img{object-fit:contain;padding:3px;background:#0d0a13;filter:grayscale(.35) brightness(.85)}
+.tile.soon:hover{border-color:rgba(156,200,255,.7);background:rgba(28,32,52,.75)}
+.tile .tr.soon{color:#9cc8ff;letter-spacing:.03em}
+.sk-tip .th small.soon{color:#9cc8ff}
+.sk-tip .th img[src*="emblem"]{object-fit:contain;background:#0d0a13;padding:3px}
 .tip-hint{font-size:12px;color:var(--muted);text-align:center;padding:0 28px 18px}
 
 /* ---- skill card tooltip, laid out like the ability cards of lastepochtools / the game ---- */
@@ -513,6 +519,8 @@ const CLASS_COLORS = {
   acolyte:  ["#4d2a62","#2a163a","#c07cff"],
   rogue:    ["#245a52","#12332e","#5fd1b6"]
 };
+// A class the game adds later works before it gets colours of its own: it is drawn in neutral gold.
+function classColors(k){ return CLASS_COLORS[k] || ["#4a4038","#26201a","#d2b06a"]; }
 
 // The skill cards come in one file per language (data/skills/<lang>.js), fetched the first time
 // that language is needed. Each file registers itself in window.LESK.
@@ -545,6 +553,21 @@ const UI = {
   ko:{title:"마스터리 룰렛",language:"언어",spin:"돌리기",spinning:"돌리는 중…",spin_again:"다시 돌리기",restart:"처음부터",mode_single:"단판 뽑기",mode_elim:"서바이벌",min_spin:"최소 회전 시간",sec:"초",sound:"소리",effects:"이펙트",roster:"룰렛 구성",roster_hint:"마스터리를 클릭하면 룰렛에서 제외됩니다. 최소 두 개는 남습니다.",roster_reset:"모두 되돌리기",remaining:"남은 수",eliminated:"탈락",winner:"우승",elim_hint:"돌릴 때마다 포인터 아래 칸이 탈락합니다. 클릭하면 다시 돌립니다.",status_idle:"난수: random.org",status_fetch:"random.org에 진짜 난수를 요청하는 중…",status_ok:"random.org 결과 (진짜 난수)",status_fallback:"random.org 사용 불가 — 로컬 난수 사용",your_mastery:"당신의 마스터리",class_label:"클래스",nickname:"캐릭터 이름",nick_empty:"영웅의 이름을 생성하세요",generate:"생성",copy:"복사",copied:"복사됨!",nick_hint:"라틴 문자만, 3–16자.",credits:"클래스·마스터리·스킬 데이터는 lastepochtools.com · 아트 © Eleventh Hour Games (lastepoch.com) · 난수는 random.org 제공",storage_note:"언어, 소리, 이펙트, 룰렛 구성은 이 브라우저에만 저장됩니다. 쿠키도 분석도 없고 어디로도 전송되지 않습니다.",storage_clear:"설정 지우기",build:"빌드 구상",bonuses:"마스터리 보너스",bar:"스킬 바",bar_random:"무작위 5개",bar_clear:"비우기",bar_copy:"빌드 복사",g_base:"클래스 스킬",g_base_sub:"캐릭터 레벨로 해금",g_tree:"{c} 패시브 트리",g_tree_sub:"클래스 패시브 트리 포인트",sub_mine:"당신의 마스터리",sub_other:"{c}의 다른 마스터리",req_lvl:"Lv {n}",req_pts:"{n}포인트",req_ms:"마스터리 스킬",only_for:"{m}의 마스터리 스킬 — 사용할 수 없음",mana:"마나",loading:"스킬 정보를 불러오는 중…",bar_full:"바가 가득 찼습니다 — 먼저 스킬을 빼세요.",tap_hint:"스킬에 마우스를 올리거나 탭하면 설명이 표시됩니다. 클릭하면 바에 넣거나 뺍니다 — 게임처럼 5칸."},
   zh:{title:"专精轮盘",language:"语言",spin:"旋转",spinning:"旋转中…",spin_again:"再转一次",restart:"重新开始",mode_single:"单次抽取",mode_elim:"淘汰赛",min_spin:"最短旋转",sec:"秒",sound:"声音",effects:"特效",roster:"转盘名单",roster_hint:"点击专精可将其移出转盘；至少保留两个。",roster_reset:"全部放回",remaining:"剩余",eliminated:"淘汰",winner:"胜者",elim_hint:"每次旋转都会淘汰指针下的扇区。点击再转一次。",status_idle:"随机来源：random.org",status_fetch:"正在向 random.org 请求真随机数…",status_ok:"结果来自 random.org（真随机）",status_fallback:"random.org 不可用——已使用本地随机",your_mastery:"你的专精",class_label:"职业",nickname:"角色名",nick_empty:"为你的英雄生成一个名字",generate:"生成",copy:"复制",copied:"已复制！",nick_hint:"仅拉丁字母，3–16 个字符。",credits:"职业、专精和技能数据来自 lastepochtools.com · 美术 © Eleventh Hour Games（lastepoch.com）· 随机数来自 random.org",storage_note:"语言、声音、特效和转盘名单仅保存在此浏览器中——无 Cookie、无统计分析，不会发送到任何地方。",storage_clear:"清除设置",build:"构筑草案",bonuses:"专精加成",bar:"技能栏",bar_random:"随机五个",bar_clear:"清空",bar_copy:"复制构筑",g_base:"职业技能",g_base_sub:"随角色等级解锁",g_tree:"{c}被动树",g_tree_sub:"职业被动树中的点数",sub_mine:"你的专精",sub_other:"{c}的其他专精",req_lvl:"等级 {n}",req_pts:"{n} 点",req_ms:"专精技能",only_for:"{m}的专精技能——你无法使用",mana:"法力",loading:"正在加载技能详情…",bar_full:"技能栏已满——请先移除一个技能。",tap_hint:"悬停或点击技能以查看说明；点击可放入或移出技能栏——共五个栏位，与游戏一致。"}
 };
+
+// Skills announced for the coming season, shown as stubs until the season's data is out (LE.upcoming).
+const UI_SOON = {
+  en:{soon:"Season {n}",soon_tip:"Announced for Season {n}, “{s}”, which starts {d}. The skill card will appear here once the season's data is out."},
+  ru:{soon:"Сезон {n}",soon_tip:"Анонсирован для {n} сезона «{s}» (старт {d}). Карточка навыка появится, когда выйдут данные сезона."},
+  de:{soon:"Saison {n}",soon_tip:"Angekündigt für Saison {n} „{s}“, Start am {d}. Die Fertigkeitskarte erscheint, sobald die Daten der Saison verfügbar sind."},
+  es:{soon:"Temporada {n}",soon_tip:"Anunciada para la temporada {n}, «{s}», que empieza el {d}. La ficha aparecerá cuando se publiquen los datos de la temporada."},
+  fr:{soon:"Saison {n}",soon_tip:"Annoncée pour la saison {n}, « {s} », qui commence le {d}. La fiche apparaîtra dès que les données de la saison seront publiées."},
+  pt:{soon:"Temporada {n}",soon_tip:"Anunciada para a Temporada {n}, “{s}”, que começa em {d}. O card da habilidade aparecerá quando os dados da temporada forem publicados."},
+  pl:{soon:"Sezon {n}",soon_tip:"Zapowiedziana na sezon {n} „{s}”, start {d}. Karta umiejętności pojawi się, gdy dane sezonu zostaną opublikowane."},
+  ja:{soon:"シーズン{n}",soon_tip:"シーズン{n}「{s}」（{d}開始）で追加予定。シーズンのデータが公開され次第、ここにスキルカードを表示します。"},
+  ko:{soon:"시즌 {n}",soon_tip:"시즌 {n} '{s}'({d} 시작)에 추가 예정입니다. 시즌 데이터가 공개되면 여기에 스킬 카드가 표시됩니다."},
+  zh:{soon:"第{n}赛季",soon_tip:"已公布将于第{n}赛季“{s}”（{d}开始）加入。赛季数据公开后，这里将显示技能卡。"}
+};
+Object.keys(UI_SOON).forEach(l=>Object.assign(UI[l], UI_SOON[l]));
 
 /* ============ NICKNAME GENERATOR POOLS ============ */
 const NICK = {
@@ -716,7 +739,7 @@ function drawWheel(){
   order.forEach((ci,i)=>{
     const c = CL[ci];
     const a0 = i*STEP, a1 = a0+STEP;
-    const [c1,c2] = CLASS_COLORS[c.cls];
+    const [c1,c2] = classColors(c.cls);
     const g = ctx.createRadialGradient(cx,cy,rIn,cx,cy,rOut);
     g.addColorStop(0,c2); g.addColorStop(.55,c1); g.addColorStop(1,c2);
     ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,rOut,a0,a1); ctx.closePath();
@@ -1052,7 +1075,7 @@ async function knockOut(ci, cls){
   showResult(cls, false, "out");
   renderOut();
   shake($(".wheel-wrap"));
-  burstOut(pointerSpot(), CLASS_COLORS[cls.cls], nameOf(cls.key));
+  burstOut(pointerSpot(), classColors(cls.cls), nameOf(cls.key));
   await wait(700);                             // let the burst read before the wheel closes the gap
   setWheel(order.filter(i => i !== ci));       // the remaining sectors widen to fill the gap
   renderOut();
@@ -1219,10 +1242,11 @@ function swapBackground(c){
     next.classList.remove("show"); void next.offsetWidth;          // restart the slow settle-in
     next.classList.add("show"); prev.classList.remove("show");
   };
+  im.onerror = ()=>{ a.classList.remove("show"); b.classList.remove("show"); };   // no art yet: the plain backdrop shows
   im.src = bgUrl(c);
 }
 function setAccent(c){
-  const col = CLASS_COLORS[c.cls][2];
+  const col = classColors(c.cls)[2];
   document.documentElement.style.setProperty("--accent", col);
   $("#brandMark").src = emblemUrl(c.cls);
 }
@@ -1294,6 +1318,7 @@ function renderBuild(c){
     g.appendChild(h);
     const tiles = el("div", "tiles");
     list.forEach(s=>tiles.appendChild(tile(s, owner, c)));
+    (LE.upcoming || []).filter(u=>u.m === owner).forEach(u=>tiles.appendChild(soonTile(u)));
     g.appendChild(tiles);
     gs.appendChild(g);
   };
@@ -1317,6 +1342,40 @@ function tile(s, owner, c){
   bindTip(b, s, owner, c);
   b.addEventListener("click", ()=>{ if(!locked) toggleBar(s[0], b); else showTip(b, s, owner, c, true); });
   return b;
+}
+
+// A skill announced for the coming season: the mastery emblem stands in for its icon, it cannot go on
+// the bar, and its card says when it arrives. The English name is all the announcement gives.
+function seasonVars(){
+  const S = LE.season || {};
+  let d = S.start || "";
+  try{ d = new Intl.DateTimeFormat(lang === "pt" ? "pt-BR" : lang, {day:"numeric", month:"long", year:"numeric"}).format(new Date(S.start + "T12:00:00Z")); }catch(e){}
+  return {n: S.no, s: S.n, d: d};
+}
+function soonTile(u){
+  const b = el("button", "tile soon"); b.type = "button";
+  const im = el("img"); im.src = emblemUrl(u.m); im.alt = "";
+  const tx = el("span"); tx.style.minWidth = "0";
+  tx.append(el("span", "tn", u.n), el("span", "tr soon", t("soon", seasonVars())));
+  b.append(im, tx);
+  b.addEventListener("mouseenter", ()=>showSoon(b, u));
+  b.addEventListener("mouseleave", ()=>{ if(!tipPinned) hideTip(); });
+  b.addEventListener("focus", ()=>showSoon(b, u));
+  b.addEventListener("blur", ()=>{ if(!tipPinned) hideTip(); });
+  b.addEventListener("click", ()=>showSoon(b, u, true));
+  return b;
+}
+function showSoon(node, u, pin){
+  tipFor = node; tipPinned = !!pin;
+  tipEl.classList.toggle("pinned", tipPinned);
+  tipEl.innerHTML = "";
+  const head = el("div", "th");
+  const im = el("img"); im.src = emblemUrl(u.m); im.alt = "";
+  const tx = el("div"); tx.append(el("b", "", u.n), el("small", "soon", t("soon", seasonVars()) + " · " + nameOf(u.m)));
+  head.append(im, tx);
+  tipEl.append(head, el("div", "tb", t("soon_tip", seasonVars())));
+  placeTip(node);
+  tipEl.classList.add("on");
 }
 
 /* ---- skill bar ---- */
@@ -1438,7 +1497,8 @@ function placeTip(node){
 /* ===================== NICKNAME ===================== */
 function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
 function buildNick(r, cls){
-  const P=NICK.prefixes, Rt=NICK.roots, S=NICK.suffixes, E=NICK.epithets[cls]||[];
+  const P=NICK.prefixes, Rt=NICK.roots, S=NICK.suffixes;
+  const E=NICK.epithets[cls] || [].concat(...Object.values(NICK.epithets));   // a class with no pool of its own borrows them all
   const root = Rt[r[0]%Rt.length], suf = S[r[1]%S.length], pre = P[r[2]%P.length], ep = E[r[3]%E.length], root2 = Rt[r[4]%Rt.length];
   const pattern = r[5] % 5;
   let name;

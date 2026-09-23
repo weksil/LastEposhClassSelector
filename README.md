@@ -22,6 +22,26 @@ Under the wheel, for the mastery on show:
 - hovering or tapping a tile opens the skill card: description, notes, mana cost, cooldown, speed, base damage, attribute scaling, scaling tags and where the skill comes from. The layout matches lastepochtools.com;
 - a **five-slot skill bar**, like the game's. Click tiles to put skills on it or take them off. **Random five** fills it from random.org (the mastery skill always included), and **Copy build** copies `Mastery (Class): skill, skill, …` to the clipboard.
 
+## Season 5 and new classes
+
+Season 5, “Rage of the Frostborn”, starts on 1 October 2026 and adds no new class or mastery. It does add three new skills. Until lastepochtools has their data, they appear as dashed stubs in their mastery groups: the mastery emblem stands in for the icon, the tooltip says when the season starts, and the stub cannot go on the skill bar.
+
+| Mastery | Skill |
+|---|---|
+| Bladedancer | Dreamslash |
+| Paladin | Radiant Lance |
+| Shaman | Summon Tide Elemental |
+
+The stubs are listed in `UPCOMING` in `tools/meta.py`, with the season in `SEASON`. `build.py` drops a stub by itself once the data has a skill with the same English name, so after the season is out, re-harvesting and rebuilding replaces them with the real skills.
+
+The page is ready for a class added later:
+- the wheel, line-up, build sketch and skill bar are all driven by `data/le.js`;
+- a class without an entry in `CLASS_COLORS` is drawn in neutral gold;
+- the name generator borrows the epithets of every class;
+- a mastery without art in `assets/bg/` shows the plain backdrop.
+
+To add a class, put it in `CLASSES` in `tools/meta.py`, rebuild, and add `assets/emblem/<key>.webp` and `assets/bg/<mastery>.webp`, plus colours and name epithets in `index.html` if you want them.
+
 ## Languages
 
 All ten languages the game ships: English, Deutsch, Español, Français, 日本語, 한국어, Polski, Português (Brasil), Русский, 简体中文. Class, mastery and skill names, descriptions, bonuses and skill cards are the game's own texts, taken from lastepochtools.com. The interface strings are written for this page. A language whose card file is missing falls back to the English cards.
