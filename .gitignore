@@ -1,0 +1,6 @@
+# inputs of tools/build.py, downloaded from lastepochtools.com (large, regenerable — see README)
+tools/i18n/
+tools/cards/
+tools/*_src.json
+tools/sprite.*
+__pycache__/

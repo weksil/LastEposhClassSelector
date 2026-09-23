@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Mastery Roulette · Last Epoch</title>
+<link rel="icon" href="assets/emblem/mage.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Forum&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#d2b06a; --gold-2:#f1dea8; --gold-3:#fff3d0; --ink:#0b0910; --panel:rgba(15,11,21,.74); --panel-2:rgba(22,16,30,.82);
+  --text:#efe7d6; --muted:#a79c8a; --line:rgba(210,176,106,.32); --violet:#9b7be0; --violet-2:rgba(155,123,224,.35);
+  --font-head:'Cinzel','Forum','Times New Roman',serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans','Noto Sans JP','Noto Sans KR','Noto Sans SC','Microsoft YaHei',sans-serif;
+  --accent:#d2b06a;                      /* the colour of the class on show, set from script */
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--ink);color:var(--text);font-family:var(--font-body)}
+body{position:relative;overflow-x:hidden}
+img{max-width:100%}
+
+/* ---- background layers ---- */
+.bg{position:fixed;inset:0;z-index:0;background:#0b0910 center/cover no-repeat;opacity:0;transform:scale(1.04);
+  transition:opacity 1.3s ease,transform 9s ease-out}
+.bg.show{opacity:1;transform:scale(1)}
+.bg-default{position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(1200px 700px at 50% 12%,#2a1f34 0%,#130e19 55%,#07060a 100%)}
+.bg-veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(120% 80% at 50% 38%,rgba(8,6,12,0) 0%,rgba(8,6,12,.38) 62%,rgba(8,6,12,.82) 100%),
+    linear-gradient(180deg,rgba(8,6,12,.62) 0%,rgba(8,6,12,.12) 30%,rgba(8,6,12,.4) 70%,rgba(8,6,12,.94) 100%)}
+.bg-glow{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.55;transition:background 1.2s ease;
+  background:radial-gradient(900px 500px at 28% 45%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 70%)}
+
+/* ---- layout ---- */
+.page{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 28px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-mark{width:46px;height:46px;flex:none;filter:drop-shadow(0 4px 12px rgba(0,0,0,.8))}
+h1{font-family:var(--font-head);font-weight:800;letter-spacing:.07em;font-size:clamp(19px,2.4vw,30px);margin:0;line-height:1.05;
+  background:linear-gradient(180deg,#fff7df 0%,#f1dea8 38%,#b98f45 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.85))}
+.sub-title{font-family:var(--font-head);font-size:11.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.head-left{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.head-right{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+/* a shout-out to the channel this was built for */
+.shout{display:inline-flex;align-items:center;gap:11px;text-decoration:none;white-space:nowrap;
+  font-size:16px;letter-spacing:.02em;color:var(--text);padding:9px 18px 9px 11px;border-radius:999px;
+  border:1px solid var(--line);background:linear-gradient(180deg,rgba(145,70,255,.2),rgba(12,9,16,.88));
+  box-shadow:0 6px 20px rgba(0,0,0,.55);transition:color .15s,border-color .15s,box-shadow .2s,transform .1s}
+.shout-ico{position:relative;width:30px;height:30px;flex:none}
+.shout-ico svg{width:30px;height:30px;display:block;color:#9146ff;filter:drop-shadow(0 0 6px rgba(145,70,255,.6));transition:opacity .4s ease}
+.shout-ico img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;background:#0b0910;
+  border:1px solid rgba(145,70,255,.85);box-shadow:0 0 10px rgba(145,70,255,.45);opacity:0;transition:opacity .4s ease}
+.shout-ico.has-ava img{opacity:1}
+.shout-ico.has-ava svg{opacity:0}
+.shout b{color:var(--gold-2);font-weight:600}
+.shout:hover{border-color:rgba(145,70,255,.75);box-shadow:0 6px 24px rgba(145,70,255,.35)}
+.shout:active{transform:translateY(1px)}
+.shout:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.lang{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+select{background:rgba(12,9,16,.88);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer}
+select:focus{outline:2px solid var(--gold);outline-offset:1px}
+
+main{flex:none;display:grid;grid-template-columns:minmax(320px,1fr) minmax(320px,460px);gap:32px;align-items:center;padding:6px 28px 30px;max-width:1280px;width:100%;margin:0 auto}
+@media (max-width:900px){main{grid-template-columns:1fr;gap:24px}}
+
+/* ---- wheel ---- */
+.wheel-wrap{position:relative;width:min(100%,640px);aspect-ratio:1;margin:0 auto;filter:drop-shadow(0 22px 50px rgba(0,0,0,.85))}
+.wheel-wrap::before{content:"";position:absolute;inset:-4%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,transparent 62%,color-mix(in srgb,var(--accent) 30%,transparent) 70%,transparent 76%);opacity:.8;transition:background 1s}
+canvas#wheel{position:relative;width:100%;height:100%;display:block;border-radius:50%;will-change:transform}
+.pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);transform-origin:50% 0;will-change:transform;width:0;height:0;
+  border-left:18px solid transparent;border-right:18px solid transparent;border-top:42px solid var(--gold-2);
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.9));z-index:3}
+.pointer::after{content:"";position:absolute;left:-11px;top:-42px;border-left:11px solid transparent;border-right:11px solid transparent;border-top:28px solid #7a5a22}
+.hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:17%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#3a2c45,#120c18 70%);border:3px solid var(--gold);box-shadow:0 0 0 6px rgba(0,0,0,.6),0 0 24px rgba(155,123,224,.25),inset 0 0 20px rgba(0,0,0,.9);z-index:2;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s ease,box-shadow .2s}
+.hub:hover{transform:translate(-50%,-50%) scale(1.05);box-shadow:0 0 0 6px rgba(0,0,0,.6),0 0 34px rgba(210,176,106,.55),inset 0 0 20px rgba(0,0,0,.9)}
+.hub:focus-visible{outline:2px solid var(--gold-2);outline-offset:4px}
+.hub.busy{cursor:progress;opacity:.75}
+.hub span{font-family:var(--font-head);font-weight:700;font-size:clamp(11px,1.6vw,18px);color:var(--gold-2);letter-spacing:.08em;text-align:center;line-height:1.1;padding:4px}
+
+/* ---- side panel ---- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 24px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,240,200,.06);position:relative;z-index:3}
+.btn{appearance:none;border:1px solid var(--gold);background:linear-gradient(180deg,#5d4520,#2b1f0e);color:var(--gold-2);font-family:var(--font-head);font-weight:700;letter-spacing:.12em;
+  font-size:16px;padding:14px 22px;border-radius:10px;cursor:pointer;width:100%;transition:transform .1s,filter .2s,box-shadow .2s;text-transform:uppercase;
+  box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,230,170,.18)}
+.btn:hover:not(:disabled){filter:brightness(1.18);box-shadow:0 6px 26px rgba(210,176,106,.28),inset 0 1px 0 rgba(255,230,170,.25)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:progress}
+.btn.secondary{font-family:var(--font-body);text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500;padding:9px 15px;width:auto;
+  background:linear-gradient(180deg,#2a2033,#17111d);border-color:rgba(210,176,106,.55)}
+.btn.secondary:disabled{cursor:not-allowed}
+.status{margin-top:12px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;min-height:18px}
+.dot{width:8px;height:8px;border-radius:50%;background:#555;flex:none}
+.dot.ok{background:#63c26b;box-shadow:0 0 8px #63c26b}
+.dot.warn{background:#d9a441;box-shadow:0 0 8px #d9a441}
+.dot.busy{background:var(--gold);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+
+.result{margin-top:22px;display:none}
+.result.show{display:block;animation:rise .6s ease}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.result-head{display:flex;gap:16px;align-items:center}
+.medal{width:104px;height:104px;flex:none;border-radius:50%;display:grid;place-items:center;position:relative;
+  background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--accent) 40%,#1b1322),#0c0810 72%);
+  border:2px solid var(--gold);box-shadow:0 0 26px rgba(210,176,106,.35),0 6px 20px rgba(0,0,0,.8),inset 0 0 22px rgba(0,0,0,.8)}
+.medal img{width:86%;height:86%;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.8))}
+.label{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.asc{font-family:var(--font-head);font-weight:700;font-size:clamp(21px,2.6vw,31px);color:var(--gold-2);line-height:1.12;margin:4px 0 3px;text-shadow:0 2px 14px rgba(0,0,0,.8)}
+.chr{font-size:15px;color:var(--text)}
+.chr b{color:var(--gold)}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+
+.nick-row{display:flex;flex-direction:column;gap:10px}
+.nick{width:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:700;font-size:clamp(18px,2.2vw,24px);letter-spacing:.05em;color:var(--gold-2);
+  background:rgba(0,0,0,.45);border:1px dashed var(--line);border-radius:10px;padding:10px 14px;min-height:50px;word-break:break-all;text-align:center}
+.nick.empty{color:var(--muted);font-family:var(--font-body);font-weight:400;font-size:14px;letter-spacing:0}
+.nick-actions{display:flex;gap:8px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--muted);margin-top:8px}
+
+/* ---- spin controls ---- */
+.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.modes{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:rgba(0,0,0,.35)}
+.mode{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;padding:8px 14px;cursor:pointer;white-space:nowrap;transition:color .15s,background .15s}
+.mode + .mode{border-left:1px solid var(--line)}
+.mode:hover:not(:disabled){color:var(--text)}
+.mode.on{background:linear-gradient(180deg,#5d4520,#2b1f0e);color:var(--gold-2);font-weight:600}
+.mode:disabled{opacity:.5;cursor:not-allowed}
+.mode:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.secs{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:13px}
+.secs input{width:62px;background:rgba(0,0,0,.45);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 8px;font:inherit;text-align:center}
+.secs input:focus{outline:2px solid var(--gold);outline-offset:1px}
+.icons{display:flex;gap:8px}
+.iconbtn{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;flex:none;cursor:pointer;
+  border:1px solid var(--line);border-radius:9px;background:rgba(0,0,0,.35);color:var(--gold-2);transition:color .15s,border-color .15s,background .15s}
+.iconbtn:hover{border-color:var(--gold);background:rgba(93,69,32,.45)}
+.iconbtn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.iconbtn svg{width:19px;height:19px}
+.iconbtn .wave{transition:opacity .15s}
+.iconbtn .slash{opacity:0;transition:opacity .15s}
+.iconbtn.off{color:var(--muted)}
+.iconbtn.off .wave{opacity:0}
+.iconbtn.off .slash{opacity:1}
+/* ---- the line-up: which masteries sit on the wheel ---- */
+.roster{margin:0 0 14px}
+.roster>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);
+  padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:rgba(0,0,0,.35);transition:color .15s,border-color .15s}
+.roster>summary::-webkit-details-marker{display:none}
+.roster>summary::before{content:"▸";color:var(--gold);transition:transform .15s}
+.roster[open]>summary::before{transform:rotate(90deg)}
+.roster>summary:hover{color:var(--text);border-color:rgba(210,176,106,.6)}
+.roster>summary b{margin-left:auto;color:var(--gold-2);font-family:var(--font-head);font-size:14px;font-weight:700}
+.roster-body{padding:10px 2px 2px}
+.roster-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.roster-top .btn{margin-left:auto}
+.pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:236px;overflow:auto}
+.pick button{appearance:none;font:inherit;font-size:12px;line-height:1.25;text-align:left;cursor:pointer;display:flex;align-items:center;gap:7px;
+  padding:4px 11px 4px 5px;border-radius:999px;border:1px solid rgba(210,176,106,.35);background:rgba(0,0,0,.4);color:var(--text);
+  transition:opacity .15s,border-color .15s,color .15s,background .15s}
+.pick button img{width:24px;height:24px;flex:none}
+.pick button small{display:block;font-size:10.5px;color:var(--muted);letter-spacing:.02em}
+.pick button:hover:not(:disabled){border-color:var(--gold);background:rgba(93,69,32,.45)}
+.pick button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.pick button:disabled{cursor:not-allowed}
+.pick button.off{opacity:.45;color:var(--muted);border-style:dashed}
+.pick button.off span:first-of-type{text-decoration:line-through;text-decoration-color:rgba(214,90,60,.8)}
+.pick button.off img{filter:grayscale(1)}
+.elim-only{display:none}
+body.elim .elim-only{display:block}
+.elim-box[hidden]{display:none}
+.elim-box{margin-top:16px}
+.elim-count{font-size:12.5px;color:var(--muted)}
+.elim-count b{color:var(--gold-2);font-size:16px;font-family:var(--font-head)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;max-height:132px;overflow:auto}
+.chip{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid rgba(210,176,106,.25);background:rgba(0,0,0,.4);color:var(--muted)}
+.chip i{font-style:normal;opacity:.6;font-size:11px}
+.chip.gone{text-decoration:line-through;text-decoration-color:rgba(214,90,60,.9)}
+.chip.win{border-color:var(--gold);color:var(--gold-2);background:linear-gradient(180deg,#5d4520,#2b1f0e);font-weight:600;box-shadow:0 0 16px rgba(210,176,106,.35)}
+.chip.fresh{animation:chipIn .45s ease}
+@keyframes chipIn{from{opacity:0;transform:translateY(-6px) scale(.9)}to{opacity:1;transform:none}}
+
+/* ---- result states: knocked out / crowned ---- */
+#result.out .medal{border-color:#a4432c;filter:grayscale(.6) brightness(.72);box-shadow:0 0 25px rgba(180,60,40,.35)}
+#result.out .asc{color:#e0977f;text-decoration:line-through;text-decoration-color:rgba(200,70,45,.85)}
+#result.win .medal{animation:medalPop .7s ease;box-shadow:0 0 44px rgba(241,222,168,.7),0 6px 20px rgba(0,0,0,.8)}
+#result.win .asc{animation:goldFlare 1.8s ease}
+#result.locked #nickBlock{display:none}
+@keyframes medalPop{0%{transform:scale(.6);opacity:.3}60%{transform:scale(1.12)}100%{transform:none}}
+@keyframes goldFlare{0%{text-shadow:0 0 0 rgba(255,230,160,0)}35%{text-shadow:0 0 28px rgba(255,230,160,.95)}100%{text-shadow:0 0 0 rgba(255,230,160,0)}}
+
+/* ---- build sketch: the mastery and every skill of its class ---- */
+.build{position:relative;z-index:2;max-width:1280px;width:100%;margin:0 auto;padding:0 28px 34px}
+.build-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 24px 70px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,240,200,.06);overflow:hidden}
+.build-head{display:grid;grid-template-columns:auto 1fr minmax(260px,380px);gap:26px;align-items:center;padding:26px 28px;position:relative;
+  background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 22%,transparent) 0%,transparent 55%),linear-gradient(180deg,rgba(255,240,200,.03),transparent)}
+.build-head::after{content:"";position:absolute;left:28px;right:28px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+@media (max-width:980px){.build-head{grid-template-columns:auto 1fr}.bonus-box{grid-column:1 / -1}}
+@media (max-width:560px){.build-head{grid-template-columns:1fr;text-align:center}.build-emblem{margin:0 auto}}
+.build-emblem{width:128px;height:128px;position:relative;display:grid;place-items:center}
+.build-emblem::before{content:"";position:absolute;inset:-10%;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--accent) 45%,transparent) 0%,transparent 68%);filter:blur(6px)}
+.build-emblem img{position:relative;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,.85))}
+.build-name{font-family:var(--font-head);font-weight:800;font-size:clamp(26px,3.4vw,42px);line-height:1.05;margin:4px 0 6px;letter-spacing:.03em;
+  background:linear-gradient(180deg,#fff7df 0%,#f1dea8 45%,#c39a4e 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.build-cls{font-size:14px;color:var(--muted);letter-spacing:.06em}
+.build-cls b{color:var(--gold);font-weight:600}
+.build-desc{margin-top:10px;font-size:14px;line-height:1.55;color:#d8cdb6;max-width:62ch}
+.bonus-box{border:1px solid rgba(210,176,106,.3);border-radius:14px;padding:14px 16px;background:rgba(0,0,0,.32)}
+.bonus-box .label{margin-bottom:8px}
+.bonus-box ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+.bonus-box li{position:relative;padding-left:18px;font-size:13.5px;line-height:1.45;color:#b9b0ff}
+.bonus-box li::before{content:"";position:absolute;left:2px;top:.52em;width:7px;height:7px;transform:rotate(45deg);background:var(--gold);box-shadow:0 0 8px rgba(210,176,106,.7)}
+.ms-skill{margin-top:12px;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;
+  border:1px solid rgba(210,176,106,.45);background:linear-gradient(90deg,rgba(93,69,32,.45),rgba(0,0,0,.2))}
+.ms-skill img{width:40px;height:40px;border-radius:6px;box-shadow:0 0 0 1px rgba(241,222,168,.5),0 0 14px rgba(210,176,106,.4)}
+.ms-skill small{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ms-skill b{font-family:var(--font-head);font-size:16px;color:var(--gold-2)}
+
+/* the five-slot skill bar */
+.bar-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 28px;border-bottom:1px solid rgba(210,176,106,.14);background:rgba(0,0,0,.18)}
+.bar-row .label{flex-basis:100%;margin-bottom:-6px}
+.slots{display:flex;gap:10px}
+.slot{appearance:none;width:62px;height:62px;border-radius:10px;padding:0;cursor:pointer;position:relative;overflow:hidden;
+  border:1px solid rgba(210,176,106,.45);background:radial-gradient(circle at 50% 35%,#231a2c,#0d0911 75%);
+  box-shadow:inset 0 0 14px rgba(0,0,0,.9),0 4px 12px rgba(0,0,0,.5);transition:transform .12s,border-color .15s,box-shadow .2s}
+.slot img{width:100%;height:100%;display:block}
+.slot:empty::after{content:attr(data-n);position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-head);font-size:18px;color:rgba(210,176,106,.35)}
+.slot.filled{border-color:var(--gold-2);box-shadow:0 0 16px rgba(210,176,106,.35),inset 0 0 0 1px rgba(0,0,0,.6)}
+.slot.filled:hover{transform:translateY(-2px)}
+.slot.filled:hover::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,6,12,.62);color:#ffb387;font-size:20px}
+.slot:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.slot.pop{animation:slotPop .35s ease}
+@keyframes slotPop{0%{transform:scale(.7)}60%{transform:scale(1.1)}100%{transform:none}}
+.bar-names{flex:1;min-width:220px;font-size:13px;color:#d8cdb6;line-height:1.5}
+.bar-names b{color:var(--gold-2);font-weight:600}
+.bar-names .muted{color:var(--muted)}
+.bar-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* skill groups */
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;padding:20px 28px 26px}
+.group{border:1px solid rgba(210,176,106,.18);border-radius:14px;background:rgba(6,4,9,.42);padding:14px 14px 12px;position:relative}
+.group.mine{border-color:rgba(241,222,168,.6);background:linear-gradient(180deg,rgba(93,69,32,.34),rgba(6,4,9,.5) 60%);
+  box-shadow:0 0 30px rgba(210,176,106,.12),inset 0 1px 0 rgba(255,240,200,.1)}
+.group.wide{grid-column:1 / -1}
+.g-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.g-head img{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8))}
+.g-title{font-family:var(--font-head);font-weight:700;font-size:16px;color:var(--gold-2);letter-spacing:.03em;line-height:1.1}
+.g-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.group.mine .g-sub{color:var(--gold)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+.tile{appearance:none;font:inherit;text-align:left;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:9px;padding:6px 8px 6px 6px;min-width:0;
+  border-radius:10px;border:1px solid rgba(210,176,106,.16);background:rgba(20,15,26,.72);transition:border-color .15s,background .15s,transform .1s,box-shadow .2s}
+.tile img{width:40px;height:40px;flex:none;border-radius:7px;box-shadow:0 0 0 1px rgba(0,0,0,.8),0 2px 6px rgba(0,0,0,.6)}
+.tile .tn{display:block;font-size:12.8px;line-height:1.2;font-weight:500;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tile .tr{display:block;font-size:10.8px;color:var(--muted);margin-top:2px;white-space:nowrap}
+.tile .tr.ms{color:var(--gold)}
+.tile:hover{border-color:rgba(210,176,106,.6);background:rgba(45,33,55,.8)}
+.tile:active{transform:translateY(1px)}
+.tile:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.tile.on{border-color:var(--gold-2);background:linear-gradient(90deg,rgba(93,69,32,.7),rgba(30,22,36,.8));box-shadow:0 0 14px rgba(210,176,106,.3)}
+.tile.on img{box-shadow:0 0 0 1px var(--gold-2),0 0 12px rgba(241,222,168,.6)}
+.tile.locked{opacity:.5;cursor:help}
+.tile.locked img{filter:grayscale(.8)}
+.tile.locked:hover{border-color:rgba(214,90,60,.5)}
+.tip-hint{font-size:12px;color:var(--muted);text-align:center;padding:0 28px 18px}
+
+/* ---- skill card tooltip, laid out like the ability cards of lastepochtools / the game ---- */
+.sk-tip{position:fixed;z-index:20;width:min(430px,calc(100vw - 16px));pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .12s ease,transform .12s ease;
+  background:linear-gradient(180deg,#130e17,#07050a);border:1px solid #7d6536;border-radius:6px;
+  box-shadow:0 14px 40px rgba(0,0,0,.92),inset 0 0 0 1px rgba(0,0,0,.8),inset 0 0 40px rgba(155,123,224,.06)}
+.sk-tip.on{opacity:1;transform:none}
+.sk-tip .th{display:flex;align-items:center;gap:11px;padding:10px 12px;border-bottom:1px solid #5c4a2a;
+  background:linear-gradient(180deg,#2a2014,#0f0b08)}
+.sk-tip .th img{width:48px;height:48px;border-radius:6px;box-shadow:0 0 0 1px rgba(241,222,168,.45)}
+.sk-tip .th b{display:block;font-family:var(--font-head);font-size:17px;color:#f3e2b3;line-height:1.1}
+.sk-tip .th small{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
+.sk-tip .th small.ms{color:var(--gold)}
+.sk-tip .tb{padding:10px 13px 12px;font-size:12.3px;line-height:1.45;color:#c9bea7;max-height:calc(100vh - 96px);overflow:hidden}
+/* pinned by a click or a tap: it can be scrolled, which a phone needs for the long cards */
+.sk-tip.pinned{pointer-events:auto}
+.sk-tip.pinned .tb{overflow:auto;overscroll-behavior:contain}
+.sk-tip .hl,.sk-tip .lnk{color:#fff}
+.sk-tip .lnk{color:#f1dea8}
+.sk-tip .ability-name-sub{font-family:var(--font-head);color:#f1dea8;font-size:13px;margin-top:4px}
+.sk-tip .negative{color:#e7a07f}
+.sk-tip .positive,.sk-tip .buff{color:#9fd49a}
+.sk-tip .level-scaling-stat,.sk-tip .damage-extra,.sk-tip .ability-sub-extra{color:#b9ad96}
+.sk-tip .tb.wait{color:var(--muted);font-style:italic}
+.sk-tip .ability-description{color:#e2d8c2;font-size:13px}
+.sk-tip .separator{height:1px;margin:7px 0;background:linear-gradient(90deg,transparent,rgba(125,101,54,.8),transparent)}
+.sk-tip .ability-description .separator{height:0;margin:5px 0;background:none}
+.sk-tip .ability-params{margin-top:8px}
+.sk-tip .with-divider{border-top:1px solid rgba(125,101,54,.45);padding-top:8px}
+.sk-tip .ability-alt-text{color:#a9b9cf;font-size:12px}
+.sk-tip .ability-alt-text .separator{height:0;margin:4px 0;background:none}
+.sk-tip .mod-value{color:#fff;font-weight:600}
+.sk-tip .sub{font-size:11.5px;color:#d9cba6;margin:3px 0 0 10px}
+.sk-tip .stat-extra{color:#9cb8f0;font-size:12px;margin-top:3px}
+.sk-tip .attr-scaling{color:#e3d6b5}
+.sk-tip .attr-scaling-stats{margin:2px 0 0;padding-left:18px}
+.sk-tip .is-not-hit{color:#e7a07f}
+.sk-tip .ability-tags{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
+.sk-tip .ability-tag{display:inline-block;padding:1px 8px;border-radius:999px;border:1px solid rgba(155,123,224,.5);background:rgba(155,123,224,.12);color:#d4c6ff;font-size:11.5px}
+.sk-tip .bottom-block{margin-top:10px;padding-top:8px;border-top:1px solid rgba(125,101,54,.45);font-size:11.5px;color:#8a8170;font-style:italic}
+.sk-tip .ability-source-class{color:var(--gold);font-style:normal}
+.sk-tip .foot{font-size:11px;color:#e7a07f;padding:0 13px 10px}
+
+/* ---- particles ---- */
+#fx{position:fixed;inset:0;z-index:6;pointer-events:none}
+.fx-label{position:fixed;z-index:7;pointer-events:none;transform:translate(-50%,-50%);font-family:var(--font-head);font-weight:700;
+  letter-spacing:.06em;white-space:nowrap;text-shadow:0 2px 18px rgba(0,0,0,.95)}
+.fx-label.out{font-size:clamp(20px,3vw,34px);color:#ffb387;text-decoration:line-through;text-decoration-color:rgba(255,120,70,.9);animation:fxOut 1.5s ease forwards}
+.fx-label.win{font-size:clamp(30px,5vw,64px);color:#ffeec2;animation:fxWin 2.5s ease forwards}
+@keyframes fxOut{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}35%{transform:translate(-50%,-62%) scale(1)}100%{opacity:0;transform:translate(-50%,-190%) scale(.95)}}
+@keyframes fxWin{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}38%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-72%) scale(1.05)}}
+.wheel-wrap.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translate(-3px,1px) rotate(-.4deg)}20%,80%{transform:translate(5px,-2px) rotate(.5deg)}30%,50%,70%{transform:translate(-8px,2px) rotate(-.7deg)}40%,60%{transform:translate(8px,-1px) rotate(.7deg)}}
+.wheel-wrap.win{animation:wheelWin 1.8s ease}
+@keyframes wheelWin{0%{filter:drop-shadow(0 22px 50px rgba(0,0,0,.85))}25%{filter:drop-shadow(0 0 60px rgba(255,220,150,.95)) brightness(1.22)}100%{filter:drop-shadow(0 22px 50px rgba(0,0,0,.85))}}
+@media (prefers-reduced-motion:reduce){.bg{transition:opacity .4s;transform:none}.bg.show{transform:none}.wheel-wrap.shake,.wheel-wrap.win,.fx-label,.chip.fresh,#result.win .medal,#result.win .asc,.slot.pop,.result.show{animation:none}}
+footer{position:relative;z-index:2;text-align:center;font-size:12px;color:var(--muted);padding:6px 20px 20px}
+footer a{color:var(--gold);text-decoration:none}
+footer a:hover{text-decoration:underline}
+.privacy{margin-top:7px;font-size:11.5px;color:var(--muted);opacity:.9}
+.linkbtn{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--gold);text-decoration:underline;cursor:pointer}
+.linkbtn:hover{color:var(--gold-2)}
+.linkbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media (max-width:600px){
+  header{padding:14px 16px}
+  main{padding:4px 16px 24px}
+  .panel{padding:18px 16px}
+  .build{padding:0 16px 26px}
+  .build-head,.bar-row,.groups{padding-left:16px;padding-right:16px}
+  .slot{width:52px;height:52px}
+  .slots{gap:7px}
+  .tiles{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
+}
+</style>
+</head>
+<body>
+<div class="bg-default"></div>
+<div class="bg" id="bgA"></div>
+<div class="bg" id="bgB"></div>
+<div class="bg-veil"></div>
+<div class="bg-glow"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<div class="page">
+  <header>
+    <div class="head-left">
+      <div class="brand">
+        <img class="brand-mark" id="brandMark" src="assets/emblem/mage.webp" alt="">
+        <div>
+          <h1 data-i18n="title">Mastery Roulette</h1>
+          <div class="sub-title">Last Epoch</div>
+        </div>
+      </div>
+      <a class="shout" href="https://www.twitch.tv/blindermine" target="_blank" rel="noopener noreferrer">
+        <span class="shout-ico">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+          <img id="shoutAva" alt="" width="30" height="30" decoding="async">
+        </span>
+        <span>special for <b>blindermine</b></span>
+      </a>
+    </div>
+    <div class="head-right">
+      <label class="lang"><span data-i18n="language">Language</span>
+        <select id="lang" aria-label="Language"></select>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section class="wheel-wrap" aria-label="Roulette">
+      <div class="pointer" aria-hidden="true"></div>
+      <canvas id="wheel" width="1280" height="1280"></canvas>
+      <div class="hub" id="hub" role="button" tabindex="0"><span data-i18n="spin">Spin</span></div>
+    </section>
+
+    <aside class="panel">
+      <div class="controls">
+        <div class="modes" role="group" aria-label="Mode">
+          <button type="button" class="mode on" data-mode="single" data-i18n="mode_single" aria-pressed="true">Single roll</button>
+          <button type="button" class="mode" data-mode="elim" data-i18n="mode_elim" aria-pressed="false">Elimination</button>
+        </div>
+        <label class="secs"><span data-i18n="min_spin">Minimum spin</span>
+          <input type="number" id="minSec" min="2" max="60" step="0.5" value="4" inputmode="decimal">
+          <span data-i18n="sec">s</span>
+        </label>
+        <div class="icons">
+          <button type="button" class="iconbtn" id="sndBtn" aria-pressed="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" stroke="none"/>
+              <path class="wave" d="M15.5 9.2a4 4 0 0 1 0 5.6M18.2 6.6a7.7 7.7 0 0 1 0 10.8"/>
+              <path class="slash" d="M15.5 9.5l5 5m0-5l-5 5"/>
+            </svg>
+          </button>
+          <button type="button" class="iconbtn" id="fxBtn" aria-pressed="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9.4 3.6l1.5 3.9 3.9 1.5-3.9 1.5-1.5 3.9-1.5-3.9L4 9l3.9-1.5z" fill="currentColor" stroke="none"/>
+              <path class="wave" d="M17 13.2l.8 2.1 2.1.8-2.1.8-.8 2.1-.8-2.1-2.1-.8 2.1-.8zM16.6 3.4l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z" fill="currentColor" stroke="none"/>
+              <path class="slash" d="M4.5 19.5l15-15"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <details class="roster" id="roster">
+        <summary><span data-i18n="roster">Wheel line-up</span> <b id="rosterCount">0 / 0</b></summary>
+        <div class="roster-body">
+          <div class="roster-top">
+            <span data-i18n="roster_hint">Click a mastery to take it off the wheel; at least two always stay on.</span>
+            <button class="btn secondary" id="rosterAll" type="button" data-i18n="roster_reset">Put all back</button>
+          </div>
+          <div class="pick" id="pick"></div>
+        </div>
+      </details>
+      <button class="btn" id="spinBtn" data-i18n="spin">Spin</button>
+      <div class="status"><span class="dot" id="dot"></span><span id="statusText" data-i18n="status_idle">Randomness: random.org</span></div>
+      <div class="hint elim-only" data-i18n="elim_hint">Every spin knocks the sector under the pointer off the wheel. Click to spin again.</div>
+      <div class="elim-box" id="elimBox" hidden>
+        <div class="elim-count"><span data-i18n="remaining">Remaining</span>: <b id="liveCount">0</b></div>
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <div class="result" id="result">
+        <div class="result-head">
+          <div class="medal"><img id="medal" alt=""></div>
+          <div>
+            <div class="label" id="resLabel">Your mastery</div>
+            <div class="asc" id="ascName">—</div>
+            <div class="chr"><span data-i18n="class_label">Class</span>: <b id="chrName">—</b></div>
+          </div>
+        </div>
+        <div id="nickBlock">
+          <hr>
+          <div class="label" data-i18n="nickname">Character name</div>
+          <div class="nick-row" style="margin-top:10px">
+            <div class="nick empty" id="nick" data-i18n="nick_empty">Generate a name for your hero</div>
+            <div class="nick-actions">
+              <button class="btn secondary" id="nickBtn" data-i18n="generate">Generate</button>
+              <button class="btn secondary" id="copyBtn" data-i18n="copy" disabled>Copy</button>
+            </div>
+          </div>
+          <div class="hint" data-i18n="nick_hint">Latin letters only, 3–16 characters.</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <section class="build" id="build" aria-live="polite">
+    <div class="build-card">
+      <div class="build-head">
+        <div class="build-emblem"><img id="bEmblem" alt=""></div>
+        <div>
+          <div class="label" data-i18n="build">Build sketch</div>
+          <div class="build-name" id="bName">—</div>
+          <div class="build-cls"><span data-i18n="class_label">Class</span>: <b id="bCls">—</b></div>
+          <div class="build-desc" id="bDesc"></div>
+        </div>
+        <div class="bonus-box">
+          <div class="label" data-i18n="bonuses">Mastery bonuses</div>
+          <ul id="bBonus"></ul>
+          <div class="ms-skill" id="bMs" tabindex="0"></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="label" data-i18n="bar">Skill bar</div>
+        <div class="slots" id="slots"></div>
+        <div class="bar-names" id="barNames"></div>
+        <div class="bar-actions">
+          <button type="button" class="btn secondary" id="barRandom" data-i18n="bar_random">Random five</button>
+          <button type="button" class="btn secondary" id="barCopy" data-i18n="bar_copy">Copy build</button>
+          <button type="button" class="btn secondary" id="barClear" data-i18n="bar_clear">Clear</button>
+        </div>
+      </div>
+      <div class="groups" id="groups"></div>
+      <div class="tip-hint" data-i18n="tap_hint">Hover or tap a skill to read it; click to put it on the bar.</div>
+    </div>
+  </section>
+  <div class="sk-tip" id="skTip" role="tooltip"></div>
+
+  <footer>
+    <span data-i18n="credits">Class, mastery and skill data from lastepochtools.com · Art © Eleventh Hour Games (lastepoch.com) · Randomness from random.org</span>
+    <div class="privacy">
+      <span data-i18n="storage_note">Your language, sound, effects and wheel line-up are kept in this browser only — no cookies, no analytics, nothing sent anywhere.</span>
+      <button type="button" class="linkbtn" id="clearPrefs" data-i18n="storage_clear">Clear settings</button>
+    </div>
+  </footer>
+</div>
+
+<script src="data/le.js"></script>
+<script>
+/* ===================== DATA ===================== */
+// The ten languages Last Epoch itself ships (Steam store page / lastepoch.com media kit).
+const LANGS = [
+  ["en","English"],["de","Deutsch"],["es","Español"],["fr","Français"],["ja","日本語"],
+  ["ko","한국어"],["pl","Polski"],["pt","Português (Brasil)"],["ru","Русский"],["zh","简体中文"]
+];
+
+// Sector colours per class: [inner, outer] of the wedge gradient, and the accent the page takes on.
+const CLASS_COLORS = {
+  primalist:["#4f5a26","#2a3113","#9fbf5a"],
+  mage:     ["#2d3f74","#172242","#7aa2ff"],
+  sentinel: ["#6a5226","#3a2a10","#e3b85c"],
+  acolyte:  ["#4d2a62","#2a163a","#c07cff"],
+  rogue:    ["#245a52","#12332e","#5fd1b6"]
+};
+
+// The skill cards come in one file per language (data/skills/<lang>.js), fetched the first time
+// that language is needed. Each file registers itself in window.LESK.
+// A language whose file cannot be had falls back to the English cards.
+const cardLoads = {}, cardMissing = new Set();
+function loadCards(lg){
+  if(!cardLoads[lg]) cardLoads[lg] = new Promise((res, rej)=>{
+    const sc = document.createElement("script");
+    sc.src = `data/skills/${lg}.js`;
+    sc.onload = ()=>res(window.LESK[lg]);
+    sc.onerror = ()=>{ sc.remove(); cardMissing.add(lg); if(lg === "en") rej(new Error("cannot load "+sc.src)); else loadCards("en").then(res, rej); };
+    document.head.appendChild(sc);
+  });
+  return cardLoads[lg];
+}
+function cardOf(id){
+  const L = window.LESK || {}, tab = L[lang] || (cardMissing.has(lang) ? L.en : null);
+  return tab && tab[id];
+}
+
+const UI = {
+  en:{title:"Mastery Roulette",language:"Language",spin:"Spin",spinning:"Spinning…",spin_again:"Spin again",restart:"Start over",mode_single:"Single roll",mode_elim:"Elimination",min_spin:"Minimum spin",sec:"s",sound:"Sound",effects:"Effects",roster:"Wheel line-up",roster_hint:"Click a mastery to take it off the wheel; at least two always stay on.",roster_reset:"Put all back",remaining:"Remaining",eliminated:"Knocked out",winner:"Winner",elim_hint:"Every spin knocks the sector under the pointer off the wheel. Click to spin again.",status_idle:"Randomness: random.org",status_fetch:"Asking random.org for a true random number…",status_ok:"Result from random.org (true randomness)",status_fallback:"random.org unavailable — used local randomness",your_mastery:"Your mastery",class_label:"Class",nickname:"Character name",nick_empty:"Generate a name for your hero",generate:"Generate",copy:"Copy",copied:"Copied!",nick_hint:"Latin letters only, 3–16 characters.",credits:"Class, mastery and skill data from lastepochtools.com · Art © Eleventh Hour Games (lastepoch.com) · Randomness from random.org",storage_note:"Your language, sound, effects and wheel line-up are kept in this browser only — no cookies, no analytics, nothing sent anywhere.",storage_clear:"Clear settings",build:"Build sketch",bonuses:"Mastery bonuses",bar:"Skill bar",bar_random:"Random five",bar_clear:"Clear",bar_copy:"Copy build",g_base:"Class skills",g_base_sub:"unlocked by character level",g_tree:"{c} passive tree",g_tree_sub:"points spent in the class tree",sub_mine:"your mastery",sub_other:"another {c} mastery",req_lvl:"Level {n}",req_pts:"{n} points",req_ms:"Mastery skill",only_for:"Mastery skill of the {m} — not available to you",mana:"Mana",loading:"Loading skill details…",bar_full:"The bar is full — take a skill off first.",tap_hint:"Hover or tap a skill to read it; click to put it on the bar or take it off — five slots, as in the game."},
+  ru:{title:"Рулетка мастерств",language:"Язык",spin:"Крутить",spinning:"Крутится…",spin_again:"Крутить снова",restart:"Начать заново",mode_single:"Один бросок",mode_elim:"На выбывание",min_spin:"Минимум вращения",sec:"с",sound:"Звук",effects:"Эффекты",roster:"Состав колеса",roster_hint:"Нажмите на мастерство, чтобы убрать его с колеса; двое всегда остаются.",roster_reset:"Вернуть всех",remaining:"Осталось",eliminated:"Выбывает",winner:"Победитель",elim_hint:"Каждое вращение выбивает с колеса сектор под указателем. Кликните, чтобы крутить снова.",status_idle:"Случайность: random.org",status_fetch:"Запрашиваем настоящее случайное число у random.org…",status_ok:"Результат от random.org (истинная случайность)",status_fallback:"random.org недоступен — использована локальная случайность",your_mastery:"Ваше мастерство",class_label:"Класс",nickname:"Имя персонажа",nick_empty:"Сгенерируйте имя для героя",generate:"Сгенерировать",copy:"Копировать",copied:"Скопировано!",nick_hint:"Только латинские буквы, 3–16 символов.",credits:"Данные о классах, мастерствах и навыках — lastepochtools.com · Арты © Eleventh Hour Games (lastepoch.com) · Случайность от random.org",storage_note:"Язык, звук, эффекты и состав колеса хранятся только в этом браузере — без кук, аналитики и отправки куда-либо.",storage_clear:"Очистить настройки",build:"Набросок билда",bonuses:"Бонусы мастерства",bar:"Панель навыков",bar_random:"Случайные пять",bar_clear:"Очистить",bar_copy:"Скопировать билд",g_base:"Навыки класса",g_base_sub:"открываются с уровнем персонажа",g_tree:"Древо класса: {c}",g_tree_sub:"очки в пассивном древе класса",sub_mine:"ваше мастерство",sub_other:"другое мастерство класса «{c}»",req_lvl:"Ур. {n}",req_pts:"{n} очк.",req_ms:"Навык мастерства",only_for:"Навык мастерства «{m}» — вам недоступен",mana:"Мана",loading:"Загружаем описание навыка…",bar_full:"Панель заполнена — сначала уберите навык.",tap_hint:"Наведите курсор или коснитесь навыка, чтобы прочитать описание; клик ставит его на панель или убирает — пять ячеек, как в игре."},
+  de:{title:"Meisterschafts-Roulette",language:"Sprache",spin:"Drehen",spinning:"Dreht sich…",spin_again:"Nochmal drehen",restart:"Neu starten",mode_single:"Einzelwurf",mode_elim:"K.-o.-Modus",min_spin:"Mindestdauer",sec:"s",sound:"Ton",effects:"Effekte",roster:"Rad-Aufstellung",roster_hint:"Klicke eine Meisterschaft an, um sie vom Rad zu nehmen; mindestens zwei bleiben immer.",roster_reset:"Alle zurückstellen",remaining:"Verbleibend",eliminated:"Ausgeschieden",winner:"Sieger",elim_hint:"Jede Drehung wirft den Sektor unter dem Zeiger aus dem Rad. Zum erneuten Drehen klicken.",status_idle:"Zufall: random.org",status_fetch:"Frage random.org nach einer echten Zufallszahl…",status_ok:"Ergebnis von random.org (echter Zufall)",status_fallback:"random.org nicht erreichbar — lokaler Zufall verwendet",your_mastery:"Deine Meisterschaft",class_label:"Klasse",nickname:"Charaktername",nick_empty:"Erzeuge einen Namen für deinen Helden",generate:"Erzeugen",copy:"Kopieren",copied:"Kopiert!",nick_hint:"Nur lateinische Buchstaben, 3–16 Zeichen.",credits:"Klassen-, Meisterschafts- und Fertigkeitsdaten von lastepochtools.com · Artworks © Eleventh Hour Games (lastepoch.com) · Zufall von random.org",storage_note:"Sprache, Ton, Effekte und Rad-Aufstellung bleiben nur in diesem Browser — keine Cookies, keine Analyse, nichts wird verschickt.",storage_clear:"Einstellungen löschen",build:"Build-Skizze",bonuses:"Meisterschaftsboni",bar:"Fertigkeitsleiste",bar_random:"Zufällige fünf",bar_clear:"Leeren",bar_copy:"Build kopieren",g_base:"Klassenfertigkeiten",g_base_sub:"werden mit der Charakterstufe freigeschaltet",g_tree:"Passivbaum: {c}",g_tree_sub:"Punkte im Passivbaum der Klasse",sub_mine:"deine Meisterschaft",sub_other:"weitere Meisterschaft: {c}",req_lvl:"Stufe {n}",req_pts:"{n} Punkte",req_ms:"Meisterschaftsfertigkeit",only_for:"Meisterschaftsfertigkeit: {m} — für dich nicht verfügbar",mana:"Mana",loading:"Fertigkeitsdetails werden geladen…",bar_full:"Die Leiste ist voll — nimm zuerst eine Fertigkeit herunter.",tap_hint:"Fertigkeit anfahren oder antippen, um sie zu lesen; ein Klick legt sie auf die Leiste oder nimmt sie herunter — fünf Plätze wie im Spiel."},
+  es:{title:"Ruleta de maestrías",language:"Idioma",spin:"Girar",spinning:"Girando…",spin_again:"Girar de nuevo",restart:"Empezar de nuevo",mode_single:"Tirada única",mode_elim:"Eliminación",min_spin:"Giro mínimo",sec:"s",sound:"Sonido",effects:"Efectos",roster:"Participantes de la ruleta",roster_hint:"Haz clic en una maestría para quitarla de la ruleta; siempre quedan al menos dos.",roster_reset:"Devolver todas",remaining:"Restantes",eliminated:"Eliminada",winner:"Ganadora",elim_hint:"Cada giro elimina el sector bajo el puntero. Haz clic para girar otra vez.",status_idle:"Aleatoriedad: random.org",status_fetch:"Pidiendo un número verdaderamente aleatorio a random.org…",status_ok:"Resultado de random.org (aleatoriedad real)",status_fallback:"random.org no disponible — se usó aleatoriedad local",your_mastery:"Tu maestría",class_label:"Clase",nickname:"Nombre del personaje",nick_empty:"Genera un nombre para tu héroe",generate:"Generar",copy:"Copiar",copied:"¡Copiado!",nick_hint:"Solo letras latinas, 3–16 caracteres.",credits:"Datos de clases, maestrías y habilidades de lastepochtools.com · Arte © Eleventh Hour Games (lastepoch.com) · Aleatoriedad de random.org",storage_note:"Idioma, sonido, efectos y participantes se guardan solo en este navegador: sin cookies, sin analítica, nada se envía.",storage_clear:"Borrar ajustes",build:"Esbozo de build",bonuses:"Bonificaciones de maestría",bar:"Barra de habilidades",bar_random:"Cinco al azar",bar_clear:"Vaciar",bar_copy:"Copiar build",g_base:"Habilidades de clase",g_base_sub:"se desbloquean con el nivel del personaje",g_tree:"Árbol pasivo: {c}",g_tree_sub:"puntos en el árbol pasivo de la clase",sub_mine:"tu maestría",sub_other:"otra maestría de {c}",req_lvl:"Nv. {n}",req_pts:"{n} puntos",req_ms:"Habilidad de maestría",only_for:"Habilidad de maestría de {m}: no disponible para ti",mana:"Maná",loading:"Cargando detalles de la habilidad…",bar_full:"La barra está llena: quita antes una habilidad.",tap_hint:"Pasa el cursor o toca una habilidad para leerla; un clic la pone en la barra o la quita — cinco huecos, como en el juego."},
+  fr:{title:"Roulette des maîtrises",language:"Langue",spin:"Tourner",spinning:"En rotation…",spin_again:"Tourner encore",restart:"Recommencer",mode_single:"Tirage simple",mode_elim:"Élimination",min_spin:"Durée minimale",sec:"s",sound:"Son",effects:"Effets",roster:"Composition de la roue",roster_hint:"Cliquez sur une maîtrise pour la retirer de la roue ; il en reste toujours deux.",roster_reset:"Tout remettre",remaining:"Restantes",eliminated:"Éliminée",winner:"Gagnante",elim_hint:"Chaque tour élimine le secteur sous le pointeur. Cliquez pour relancer.",status_idle:"Aléatoire : random.org",status_fetch:"Demande d'un vrai nombre aléatoire à random.org…",status_ok:"Résultat de random.org (vrai aléatoire)",status_fallback:"random.org indisponible — aléatoire local utilisé",your_mastery:"Votre maîtrise",class_label:"Classe",nickname:"Nom du personnage",nick_empty:"Générez un nom pour votre héros",generate:"Générer",copy:"Copier",copied:"Copié !",nick_hint:"Lettres latines uniquement, 3 à 16 caractères.",credits:"Données des classes, maîtrises et compétences : lastepochtools.com · Illustrations © Eleventh Hour Games (lastepoch.com) · Aléatoire par random.org",storage_note:"Langue, son, effets et composition de la roue restent uniquement dans ce navigateur — aucun cookie, aucune analyse, rien n'est envoyé.",storage_clear:"Effacer les réglages",build:"Ébauche de build",bonuses:"Bonus de maîtrise",bar:"Barre de compétences",bar_random:"Cinq au hasard",bar_clear:"Vider",bar_copy:"Copier le build",g_base:"Compétences de classe",g_base_sub:"débloquées avec le niveau du personnage",g_tree:"Arbre passif : {c}",g_tree_sub:"points dans l'arbre passif de la classe",sub_mine:"votre maîtrise",sub_other:"autre maîtrise : {c}",req_lvl:"Niv. {n}",req_pts:"{n} points",req_ms:"Compétence de maîtrise",only_for:"Compétence de maîtrise : {m} — indisponible pour vous",mana:"Mana",loading:"Chargement de la compétence…",bar_full:"La barre est pleine — retirez d'abord une compétence.",tap_hint:"Survolez ou touchez une compétence pour la lire ; un clic la place sur la barre ou l'en retire — cinq emplacements, comme en jeu."},
+  pt:{title:"Roleta de Maestrias",language:"Idioma",spin:"Girar",spinning:"Girando…",spin_again:"Girar de novo",restart:"Começar de novo",mode_single:"Giro único",mode_elim:"Eliminação",min_spin:"Giro mínimo",sec:"s",sound:"Som",effects:"Efeitos",roster:"Participantes da roleta",roster_hint:"Clique em uma maestria para tirá-la da roleta; sempre ficam pelo menos duas.",roster_reset:"Devolver todas",remaining:"Restantes",eliminated:"Eliminada",winner:"Vencedora",elim_hint:"Cada giro elimina o setor sob o ponteiro. Clique para girar de novo.",status_idle:"Aleatoriedade: random.org",status_fetch:"Pedindo um número verdadeiramente aleatório ao random.org…",status_ok:"Resultado do random.org (aleatoriedade real)",status_fallback:"random.org indisponível — usada aleatoriedade local",your_mastery:"Sua maestria",class_label:"Classe",nickname:"Nome do personagem",nick_empty:"Gere um nome para o seu herói",generate:"Gerar",copy:"Copiar",copied:"Copiado!",nick_hint:"Apenas letras latinas, 3–16 caracteres.",credits:"Dados de classes, maestrias e habilidades do lastepochtools.com · Arte © Eleventh Hour Games (lastepoch.com) · Aleatoriedade do random.org",storage_note:"Idioma, som, efeitos e participantes ficam só neste navegador — sem cookies, sem analytics, nada é enviado.",storage_clear:"Limpar configurações",build:"Esboço de build",bonuses:"Bônus de maestria",bar:"Barra de habilidades",bar_random:"Cinco aleatórias",bar_clear:"Limpar",bar_copy:"Copiar build",g_base:"Habilidades de classe",g_base_sub:"desbloqueadas pelo nível do personagem",g_tree:"Árvore passiva: {c}",g_tree_sub:"pontos na árvore passiva da classe",sub_mine:"sua maestria",sub_other:"outra maestria de {c}",req_lvl:"Nv. {n}",req_pts:"{n} pontos",req_ms:"Habilidade de maestria",only_for:"Habilidade de maestria de {m} — indisponível para você",mana:"Mana",loading:"Carregando detalhes da habilidade…",bar_full:"A barra está cheia — retire uma habilidade primeiro.",tap_hint:"Passe o cursor ou toque em uma habilidade para ler; um clique a coloca na barra ou a retira — cinco espaços, como no jogo."},
+  pl:{title:"Ruletka mistrzostw",language:"Język",spin:"Zakręć",spinning:"Kręci się…",spin_again:"Zakręć ponownie",restart:"Od nowa",mode_single:"Pojedyncze losowanie",mode_elim:"Eliminacja",min_spin:"Minimalny obrót",sec:"s",sound:"Dźwięk",effects:"Efekty",roster:"Skład koła",roster_hint:"Kliknij mistrzostwo, aby zdjąć je z koła; co najmniej dwa zawsze zostają.",roster_reset:"Przywróć wszystkie",remaining:"Pozostało",eliminated:"Odpada",winner:"Zwycięzca",elim_hint:"Każdy obrót usuwa z koła sektor pod wskaźnikiem. Kliknij, aby zakręcić ponownie.",status_idle:"Losowość: random.org",status_fetch:"Pobieranie prawdziwie losowej liczby z random.org…",status_ok:"Wynik z random.org (prawdziwa losowość)",status_fallback:"random.org niedostępny — użyto lokalnej losowości",your_mastery:"Twoje mistrzostwo",class_label:"Klasa",nickname:"Imię postaci",nick_empty:"Wygeneruj imię dla bohatera",generate:"Generuj",copy:"Kopiuj",copied:"Skopiowano!",nick_hint:"Tylko litery łacińskie, 3–16 znaków.",credits:"Dane klas, mistrzostw i umiejętności z lastepochtools.com · Grafiki © Eleventh Hour Games (lastepoch.com) · Losowość z random.org",storage_note:"Język, dźwięk, efekty i skład koła są przechowywane tylko w tej przeglądarce — bez ciasteczek, bez analityki, nic nie jest nigdzie wysyłane.",storage_clear:"Wyczyść ustawienia",build:"Szkic buildu",bonuses:"Premie mistrzostwa",bar:"Pasek umiejętności",bar_random:"Losowa piątka",bar_clear:"Wyczyść",bar_copy:"Kopiuj build",g_base:"Umiejętności klasy",g_base_sub:"odblokowywane wraz z poziomem postaci",g_tree:"Drzewko pasywne: {c}",g_tree_sub:"punkty w drzewku pasywnym klasy",sub_mine:"twoje mistrzostwo",sub_other:"inne mistrzostwo: {c}",req_lvl:"Poz. {n}",req_pts:"{n} pkt",req_ms:"Umiejętność mistrzostwa",only_for:"Umiejętność mistrzostwa {m} — niedostępna dla ciebie",mana:"Mana",loading:"Wczytywanie opisu umiejętności…",bar_full:"Pasek jest pełny — najpierw zdejmij umiejętność.",tap_hint:"Najedź lub dotknij umiejętności, aby przeczytać opis; kliknięcie dodaje ją do paska lub zdejmuje — pięć miejsc, jak w grze."},
+  ja:{title:"マスタリー・ルーレット",language:"言語",spin:"回す",spinning:"回転中…",spin_again:"もう一度回す",restart:"最初から",mode_single:"1回抽選",mode_elim:"勝ち抜き戦",min_spin:"最短回転時間",sec:"秒",sound:"サウンド",effects:"エフェクト",roster:"ホイールの顔ぶれ",roster_hint:"マスタリーをクリックするとホイールから外せます。最低2つは残ります。",roster_reset:"すべて戻す",remaining:"残り",eliminated:"脱落",winner:"優勝",elim_hint:"回すたびに、ポインタの下のセクターが脱落します。クリックでもう一度回せます。",status_idle:"乱数: random.org",status_fetch:"random.org に真の乱数を要求中…",status_ok:"random.org の結果（真の乱数）",status_fallback:"random.org に接続できません — ローカル乱数を使用",your_mastery:"あなたのマスタリー",class_label:"クラス",nickname:"キャラクター名",nick_empty:"ヒーローの名前を生成",generate:"生成",copy:"コピー",copied:"コピーしました！",nick_hint:"ラテン文字のみ、3〜16文字。",credits:"クラス・マスタリー・スキルのデータは lastepochtools.com より · アート © Eleventh Hour Games（lastepoch.com）· 乱数は random.org より",storage_note:"言語・サウンド・エフェクト・ホイールの顔ぶれはこのブラウザ内だけに保存されます。Cookie も解析もなく、どこにも送信されません。",storage_clear:"設定を消す",build:"ビルド案",bonuses:"マスタリーボーナス",bar:"スキルバー",bar_random:"ランダム5つ",bar_clear:"クリア",bar_copy:"ビルドをコピー",g_base:"クラススキル",g_base_sub:"キャラクターレベルで解放",g_tree:"{c}のパッシブツリー",g_tree_sub:"クラスのパッシブツリーのポイント",sub_mine:"あなたのマスタリー",sub_other:"{c}の別のマスタリー",req_lvl:"Lv {n}",req_pts:"{n}ポイント",req_ms:"マスタリースキル",only_for:"{m}のマスタリースキル — 使用できません",mana:"マナ",loading:"スキルの詳細を読み込み中…",bar_full:"バーがいっぱいです — 先にスキルを外してください。",tap_hint:"スキルにカーソルを合わせるかタップすると説明が出ます。クリックでバーに入れたり外したりできます — ゲームと同じく5枠。"},
+  ko:{title:"마스터리 룰렛",language:"언어",spin:"돌리기",spinning:"돌리는 중…",spin_again:"다시 돌리기",restart:"처음부터",mode_single:"단판 뽑기",mode_elim:"서바이벌",min_spin:"최소 회전 시간",sec:"초",sound:"소리",effects:"이펙트",roster:"룰렛 구성",roster_hint:"마스터리를 클릭하면 룰렛에서 제외됩니다. 최소 두 개는 남습니다.",roster_reset:"모두 되돌리기",remaining:"남은 수",eliminated:"탈락",winner:"우승",elim_hint:"돌릴 때마다 포인터 아래 칸이 탈락합니다. 클릭하면 다시 돌립니다.",status_idle:"난수: random.org",status_fetch:"random.org에 진짜 난수를 요청하는 중…",status_ok:"random.org 결과 (진짜 난수)",status_fallback:"random.org 사용 불가 — 로컬 난수 사용",your_mastery:"당신의 마스터리",class_label:"클래스",nickname:"캐릭터 이름",nick_empty:"영웅의 이름을 생성하세요",generate:"생성",copy:"복사",copied:"복사됨!",nick_hint:"라틴 문자만, 3–16자.",credits:"클래스·마스터리·스킬 데이터는 lastepochtools.com · 아트 © Eleventh Hour Games (lastepoch.com) · 난수는 random.org 제공",storage_note:"언어, 소리, 이펙트, 룰렛 구성은 이 브라우저에만 저장됩니다. 쿠키도 분석도 없고 어디로도 전송되지 않습니다.",storage_clear:"설정 지우기",build:"빌드 구상",bonuses:"마스터리 보너스",bar:"스킬 바",bar_random:"무작위 5개",bar_clear:"비우기",bar_copy:"빌드 복사",g_base:"클래스 스킬",g_base_sub:"캐릭터 레벨로 해금",g_tree:"{c} 패시브 트리",g_tree_sub:"클래스 패시브 트리 포인트",sub_mine:"당신의 마스터리",sub_other:"{c}의 다른 마스터리",req_lvl:"Lv {n}",req_pts:"{n}포인트",req_ms:"마스터리 스킬",only_for:"{m}의 마스터리 스킬 — 사용할 수 없음",mana:"마나",loading:"스킬 정보를 불러오는 중…",bar_full:"바가 가득 찼습니다 — 먼저 스킬을 빼세요.",tap_hint:"스킬에 마우스를 올리거나 탭하면 설명이 표시됩니다. 클릭하면 바에 넣거나 뺍니다 — 게임처럼 5칸."},
+  zh:{title:"专精轮盘",language:"语言",spin:"旋转",spinning:"旋转中…",spin_again:"再转一次",restart:"重新开始",mode_single:"单次抽取",mode_elim:"淘汰赛",min_spin:"最短旋转",sec:"秒",sound:"声音",effects:"特效",roster:"转盘名单",roster_hint:"点击专精可将其移出转盘；至少保留两个。",roster_reset:"全部放回",remaining:"剩余",eliminated:"淘汰",winner:"胜者",elim_hint:"每次旋转都会淘汰指针下的扇区。点击再转一次。",status_idle:"随机来源：random.org",status_fetch:"正在向 random.org 请求真随机数…",status_ok:"结果来自 random.org（真随机）",status_fallback:"random.org 不可用——已使用本地随机",your_mastery:"你的专精",class_label:"职业",nickname:"角色名",nick_empty:"为你的英雄生成一个名字",generate:"生成",copy:"复制",copied:"已复制！",nick_hint:"仅拉丁字母，3–16 个字符。",credits:"职业、专精和技能数据来自 lastepochtools.com · 美术 © Eleventh Hour Games（lastepoch.com）· 随机数来自 random.org",storage_note:"语言、声音、特效和转盘名单仅保存在此浏览器中——无 Cookie、无统计分析，不会发送到任何地方。",storage_clear:"清除设置",build:"构筑草案",bonuses:"专精加成",bar:"技能栏",bar_random:"随机五个",bar_clear:"清空",bar_copy:"复制构筑",g_base:"职业技能",g_base_sub:"随角色等级解锁",g_tree:"{c}被动树",g_tree_sub:"职业被动树中的点数",sub_mine:"你的专精",sub_other:"{c}的其他专精",req_lvl:"等级 {n}",req_pts:"{n} 点",req_ms:"专精技能",only_for:"{m}的专精技能——你无法使用",mana:"法力",loading:"正在加载技能详情…",bar_full:"技能栏已满——请先移除一个技能。",tap_hint:"悬停或点击技能以查看说明；点击可放入或移出技能栏——共五个栏位，与游戏一致。"}
+};
+
+/* ============ NICKNAME GENERATOR POOLS ============ */
+const NICK = {
+  roots:["Kael","Vor","Tal","Mor","Ash","Rav","Sil","Thar","Dra","Ely","Nyx","Gor","Zeph","Kor","Vael","Ser","Ith","Bran","Cael","Dorn","Fen","Grim","Hal","Isk","Jor","Kyr","Lor","Mal","Nar","Ori","Pyr","Quil","Rhun","Sar","Tor","Ulf","Var","Wyn","Xan","Yor","Zar","Ael","Bel","Cyr","Dun","Erv","Fal","Gal","Hex","Ing","Jun","Kas","Lun","Mir","Nol","Oth","Per","Ros","Syl","Tem","Ur","Vex","Wren","Yv","Zol"],
+  suffixes:["dor","gath","ion","ara","eth","wyn","mir","ric","vas","ith","ael","orn","us","ia","an","en","ok","ax","is","ur","oth","ys","ar","il","on","ath","iel","ek","ov","ex"],
+  prefixes:["Ash","Black","Grim","Iron","Storm","Blood","Night","Shadow","Frost","Ember","Void","Sun","Moon","Gale","Rune","Grave","Hollow","Thorn","Crimson","Silent","Wild","Bone","Dusk","Dawn","Pale"],
+  epithets:{
+    primalist:["Wildheart","Stormhide","Oakborn","Bearclaw","Thornfang","Frosthowl","Earthsong","Wolfkin","Rootcall","Skyfang"],
+    mage:["Runeweaver","Stormcall","Frostveil","Emberhand","Starfall","Spellsworn","Glyphborn","Arcfire","Voidsight","Timewise"],
+    sentinel:["Ironwall","Voidblade","Forgeborn","Dawnguard","Shieldheart","Oathkeeper","Steelvow","Lightborn","Hammerfall","Bulwark"],
+    acolyte:["Gravesong","Bonecaller","Soulbinder","Hexborn","Bloodquill","Nightveil","Ashenmaw","Deathseal","Lichborn","Cursemaw"],
+    rogue:["Nightblade","Swiftarrow","Falconeye","Shadowstep","Duskdancer","Quickdraw","Silentedge","Mistwalker","Trapwise","Longshot"]
+  }
+};
+
+/* ===================== STATE ===================== */
+const $ = s => document.querySelector(s);
+const canvas = $("#wheel"), ctx = canvas.getContext("2d");
+const CL = [];                       // one entry per mastery, in class order: {key, cls, idx, skills}
+LE.masteries.forEach(m => CL.push(m));
+const CLS = {}; LE.classes.forEach(c => { CLS[c.key] = c; });
+let N = CL.length, STEP = 2*Math.PI/N;
+let lang = "en", rotation = 0, spinning = false, current = null, nickname = "", bgToggle = false;
+let order = [];                      // sectors still on the wheel, in wheel order -> index into CL
+let mode = "single";                 // "single" = one roll, "elim" = spin until one is left
+let minSpin = 4;                     // s, the floor on how long a single spin lasts
+let outList = [];                    // the ladder, newest first: {ci, place}
+let winner = null;                   // the last sector standing, once there is one
+let resultKind = "pick";             // what the result card is showing: pick | out | win
+let excluded = new Set();            // mastery keys taken off the wheel by hand
+let bar = [];                        // the five-slot skill bar of the mastery on show: ability ids
+const BAR_MAX = 5;
+
+/* ===================== SETTINGS ===================== */
+// Everything the user picks by hand — language, mode, minimum spin, sound, effects and the wheel
+// line-up — lives in a single localStorage entry and nowhere else: no cookies, no identifier, no
+// third party, nothing leaves the browser. It is written only when the user actually changes
+// something (never for a language merely guessed from the browser), it is forgotten after a year
+// untouched, and the footer says what is kept and clears it on request.
+const PREFS_KEY = "le-roulette-prefs";
+const PREFS_TTL = 365*24*3600*1000;
+let prefs = {};
+function store(){                              // private mode and blocked storage both land here
+  try{ return window.localStorage; }catch(e){ return null; }
+}
+function savePrefs(){
+  const st = store(); if(!st) return;
+  prefs.at = Date.now();                       // only to expire the entry, never to recognise anyone
+  try{ st.setItem(PREFS_KEY, JSON.stringify(prefs)); }catch(e){}
+}
+function setPref(k, v){ prefs[k] = v; savePrefs(); }
+function clearPrefs(){
+  prefs = {};
+  const st = store(); if(!st) return;
+  try{ st.removeItem(PREFS_KEY); }catch(e){}
+}
+function loadPrefs(){
+  prefs = {};
+  const st = store(); if(!st) return;
+  let raw = null; try{ raw = st.getItem(PREFS_KEY); }catch(e){ return; }
+  if(!raw) return;
+  let p = null; try{ p = JSON.parse(raw); }catch(e){}
+  if(p && typeof p === "object"){
+    if(p.at && Date.now() - p.at > PREFS_TTL) clearPrefs();   // a year unused: it goes
+    else prefs = p;
+  }
+}
+
+/* ===================== I18N ===================== */
+function t(k, vars){
+  let s = (UI[lang] && UI[lang][k]) || UI.en[k] || k;
+  if(vars) s = s.replace(/\{(\w)\}/g, (m, v) => vars[v] != null ? vars[v] : m);
+  return s;
+}
+function nameOf(key){ return (LE.names[lang] || LE.names.en)[key] || LE.names.en[key] || key; }
+function skName(id){ return (LE.sk[lang] || LE.sk.en)[id] || LE.sk.en[id] || id; }
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k = el.dataset.i18n;
+    if(k==="nick_empty" && nickname) return;
+    if(k==="spin") return;                       // the spin label depends on the run, updateSpinLabels() owns it
+    el.textContent = t(k);
+  });
+  updateSpinLabels();
+  renderOut(); renderRoster();
+  const sb = $("#sndBtn"); sb.title = t("sound"); sb.setAttribute("aria-label", t("sound"));
+  const fb = $("#fxBtn"); fb.title = t("effects"); fb.setAttribute("aria-label", t("effects"));
+  document.title = t("title") + " · Last Epoch";
+  fitCache.clear();
+  if(current) showResult(current, false);
+  drawWheel();
+  loadCards(lang).catch(function(){});        // the cards are small enough to fetch ahead of the first hover
+}
+
+/* ===================== WHEEL ===================== */
+// Each sector carries the mastery emblem at the rim; the images load once and the wheel is redrawn as they arrive.
+const EMB = {};
+CL.forEach(c=>{ const im = new Image(); im.decoding = "async"; im.onload = ()=>drawWheel(); im.src = emblemUrl(c.key); EMB[c.key] = im; });
+function emblemUrl(key){ return `assets/emblem/${key}.webp`; }
+
+const fitCache = new Map();
+function fitFont(text, maxWidth, size, family, weight){
+  const key = weight + "|" + size + "|" + Math.round(maxWidth) + "|" + family + "|" + text;
+  let out = fitCache.get(key);
+  if(out === undefined){
+    out = size;
+    ctx.font = `${weight} ${out}px ${family}`;
+    while(out>9 && ctx.measureText(text).width>maxWidth){ out -= .5; ctx.font = `${weight} ${out}px ${family}`; }
+    fitCache.set(key, out);
+  } else ctx.font = `${weight} ${out}px ${family}`;
+  return out;
+}
+// The winner is not showered in sparks — its own sector on the wheel is switched on: the rest of
+// the wheel goes dark, the sector fills with gold from the hub outwards, beats a few times and then
+// simply stays lit until the next spin. winLit is the position on the wheel, -1 for none.
+const FLARE_MS = 2200;
+let winLit = -1, flare = null;
+function unlight(){ winLit = -1; flare = null; }
+function activateSector(pos){
+  if(!(pos >= 0) || pos >= N) return;
+  winLit = pos;
+  if(REDUCED){ flare = null; drawWheel(); return; }   // lit, but without the run-up
+  flare = {t0: performance.now(), e: 0};
+  const step = now => {
+    if(!flare || winLit < 0) return;
+    flare.e = now - flare.t0;
+    if(flare.e >= FLARE_MS){ flare = null; drawWheel(); return; }   // holds lit, with nothing left to animate
+    drawWheel();
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+// The gold that fills the winning wedge. prog is null once it is simply lit.
+function litWedge(a0, a1, cx, cy, rIn, rOut, prog){
+  let reach = 1, pulse = 1;
+  if(prog !== null){
+    const sweep = Math.min(1, prog/0.3);
+    reach = 1 - Math.pow(1 - sweep, 3);                            // races out from the hub, then eases
+    const after = Math.max(0, (prog - 0.3)/0.7);
+    pulse = 0.74 + 0.26*Math.cos(after*Math.PI*6)*(1 - after);     // a few beats that settle
+  }
+  const rEdge = rIn + (rOut - rIn)*reach;
+  const g = ctx.createRadialGradient(cx, cy, rIn, cx, cy, rOut);
+  g.addColorStop(0, "rgba(255,244,214," + (.78*pulse).toFixed(3) + ")");
+  g.addColorStop(.55, "rgba(236,196,116," + (.46*pulse).toFixed(3) + ")");
+  g.addColorStop(1, "rgba(255,226,152," + (.3*pulse).toFixed(3) + ")");
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,rEdge,a0,a1); ctx.closePath();
+  ctx.fillStyle = g; ctx.fill();
+  ctx.save();                                                       // the edge of the sector burning
+  ctx.shadowColor = "rgba(255,226,152,.95)"; ctx.shadowBlur = 50*pulse;
+  ctx.strokeStyle = "rgba(255,244,214," + (.95*pulse).toFixed(3) + ")"; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,rOut,a0,a1); ctx.closePath();
+  ctx.stroke(); ctx.stroke();                                       // twice, so the bloom is thick enough to read
+  ctx.restore();
+  return pulse;
+}
+function drawWheel(){
+  const W = canvas.width, R = W/2, cx = R, cy = R;
+  ctx.clearRect(0,0,W,W);
+  ctx.beginPath(); ctx.arc(cx,cy,R-2,0,2*Math.PI); ctx.fillStyle="#150f1a"; ctx.fill();
+  const rOut = R-14, rIn = R*0.18;
+  const fontHead = getComputedStyle(document.documentElement).getPropertyValue("--font-head");
+  const fontBody = getComputedStyle(document.documentElement).getPropertyValue("--font-body");
+  const prog = flare ? Math.min(1, flare.e/FLARE_MS) : null;
+  // how big an emblem the sector can hold at the rim: the chord of the wedge there, capped
+  const embR = rOut - 74;
+  const emb = Math.max(40, Math.min(120, 2*embR*Math.sin(STEP/2) - 14));
+  order.forEach((ci,i)=>{
+    const c = CL[ci];
+    const a0 = i*STEP, a1 = a0+STEP;
+    const [c1,c2] = CLASS_COLORS[c.cls];
+    const g = ctx.createRadialGradient(cx,cy,rIn,cx,cy,rOut);
+    g.addColorStop(0,c2); g.addColorStop(.55,c1); g.addColorStop(1,c2);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,rOut,a0,a1); ctx.closePath();
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = "rgba(210,176,106,.55)"; ctx.lineWidth = 2; ctx.stroke();
+
+    const lit = i === winLit, dim = winLit >= 0 && !lit;
+    if(lit) litWedge(a0, a1, cx, cy, rIn, rOut, prog);
+
+    ctx.save();
+    ctx.translate(cx,cy); ctx.rotate(a0+STEP/2);
+    // the emblem sits upright towards the rim
+    const im = EMB[c.key];
+    if(im && im.complete && im.naturalWidth){
+      ctx.save();
+      ctx.translate(embR - emb/2 + 18, 0); ctx.rotate(Math.PI/2);
+      ctx.globalAlpha = dim ? .35 : 1;
+      ctx.shadowColor = lit ? "rgba(255,236,178,.9)" : "rgba(0,0,0,.85)"; ctx.shadowBlur = lit ? 22 : 10;
+      ctx.drawImage(im, -emb/2, -emb/2, emb, emb);
+      ctx.restore();
+    }
+    // the names along the radius, between the hub and the emblem
+    ctx.textAlign="right"; ctx.textBaseline="middle";
+    const textEnd = embR - emb - 2;
+    const maxW = textEnd - rIn - 22;
+    const asc = nameOf(c.key), chr = nameOf(c.cls);
+    fitFont(asc, maxW, 32, fontHead, "700");
+    ctx.shadowColor = lit ? "rgba(255,236,178,.95)" : "rgba(0,0,0,.9)"; ctx.shadowBlur = lit ? 16 : 6;
+    ctx.fillStyle = lit ? "#fff8e6" : dim ? "rgba(239,230,211,.4)" : "#f3ead8";
+    ctx.fillText(asc, textEnd, -12);
+    fitFont(chr, maxW, 21, fontBody, "500");
+    ctx.fillStyle = lit ? "rgba(255,244,214,.95)" : dim ? "rgba(230,207,148,.4)" : "rgba(230,207,148,.92)";
+    ctx.fillText(chr, textEnd, 17);
+    ctx.restore();
+    if(dim){                                     // everything that did not win steps back
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,rOut,a0,a1); ctx.closePath();
+      ctx.fillStyle = "rgba(6,4,8,.5)"; ctx.fill();
+    }
+  });
+  // rim rings
+  ctx.beginPath(); ctx.arc(cx,cy,rOut,0,2*Math.PI); ctx.strokeStyle="#d2b06a"; ctx.lineWidth=8; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,R-4,0,2*Math.PI); ctx.strokeStyle="#5d4520"; ctx.lineWidth=4; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,rIn+6,0,2*Math.PI); ctx.strokeStyle="rgba(210,176,106,.55)"; ctx.lineWidth=3; ctx.stroke();
+  // studs
+  for(let i=0;i<N;i++){
+    const a=i*STEP; ctx.beginPath(); ctx.arc(cx+Math.cos(a)*rOut, cy+Math.sin(a)*rOut, 7, 0, 2*Math.PI);
+    ctx.fillStyle="#f1dea8"; ctx.fill(); ctx.strokeStyle="#3a2c14"; ctx.lineWidth=2; ctx.stroke();
+  }
+}
+function setRotation(deg){ rotation = deg; canvas.style.transform = `rotate(${deg}deg)`; }
+
+// The wheel starts turning on the click and keeps turning while random.org is
+// asked for the result, so nothing waits for the network. land() then brakes it
+// onto the drawn sector without a jump in speed.
+const SPIN_ACC = 2400;      // deg/s^2 while getting up to speed
+const SPIN_VMAX = 900;      // deg/s cruising speed (2.5 turns per second)
+const SPIN_MIN_FREE = 1.0;  // s of free spinning before braking may begin
+const SPIN_BRAKE = 3.0;     // s, nominal braking time
+// minTotal is the least the whole spin may last: the wheel cruises at full speed until only the
+// braking is left to do, and the braking distance is stretched if it would still land too early.
+function startSpin(minTotal){
+  minTotal = minTotal || 0;
+  // a short minimum also shortens the braking, so asking for a quick spin really gets one
+  const brakeTime = Math.max(1.4, Math.min(SPIN_BRAKE, minTotal - 0.5));
+  const minTurns = brakeTime >= 2.2 ? 2 : 1;
+  const hold = Math.max(SPIN_MIN_FREE, minTotal - brakeTime);
+  let last = performance.now(), free = 0, v = 0, rot = rotation;
+  let pending = null, brake = null, done;
+  const finished = new Promise(res=>{ done = res; });
+
+  function frame(now){
+    const dt = Math.min((now - last)/1000, 0.05);  // clamped, so a backgrounded tab cannot jump the wheel
+    last = now;
+    if(brake){
+      brake.t += dt;
+      const x = Math.min(1, brake.t/brake.dur);
+      const was = rotation;
+      setRotation(brake.from + brake.D*(1 - Math.pow(1-x, 4)));
+      tickEdges(was, rotation, dt);
+      if(x >= 1){ done(); return; }
+    } else {
+      free += dt;
+      v = Math.min(SPIN_VMAX, v + SPIN_ACC*dt);
+      const was = rot;
+      rot += v*dt;
+      setRotation(rot);
+      tickEdges(was, rot, dt);
+      if(pending && free >= hold && v >= SPIN_VMAX){
+        let D = v*brakeTime/4;                                    // a quartic ease-out at this speed covers this much
+        D += ((((pending.deg - (rot + D)) % 360) + 360) % 360);   // stretch it so the sector ends under the pointer
+        D += 360*pending.turns;
+        while(D < 360*minTurns) D += 360;                         // never brake in less than a whole turn
+        while(4*D/v < minTotal - free) D += 360;                  // nor finish before the requested minimum
+        brake = {t: 0, from: rot, D: D, dur: 4*D/v};              // 4D/v keeps the speed continuous at the handover
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  return { finished: finished, land: function(deg, turns){ pending = {deg: (((deg % 360) + 360) % 360), turns: turns || 0}; } };
+}
+
+/* ===================== SOUND ===================== */
+// The wheel clacks once for every sector edge that passes the pointer, the way a peg wheel does.
+// It is synthesised on the spot — a short noise burst through a bandpass, so there is no asset to load.
+let audio = null, master = null, noise = null, muted = false;
+function audioCtx(){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return null;
+  if(!audio){
+    audio = new AC();
+    master = audio.createGain(); master.gain.value = 0.9; master.connect(audio.destination);
+    const len = Math.floor(audio.sampleRate * 0.06), buf = audio.createBuffer(1, len, audio.sampleRate), ch = buf.getChannelData(0);
+    for(let i=0;i<len;i++) ch[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 3);   // a decaying burst, already shaped like a knock
+    noise = buf;
+  }
+  if(audio.state === "suspended") audio.resume();
+  return audio;
+}
+// one clack. k is how fast the wheel is going, 0..1: faster means louder and brighter.
+function clack(ac, when, k){
+  const src = ac.createBufferSource(); src.buffer = noise;
+  src.playbackRate.value = 0.9 + Math.random()*0.3;
+  const bp = ac.createBiquadFilter(); bp.type = "bandpass";
+  bp.frequency.value = 1250 + 900*k + Math.random()*260; bp.Q.value = 6;
+  const g = ac.createGain();
+  const peak = 0.05 + 0.11*k;
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.exponentialRampToValueAtTime(peak, when + 0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + 0.055);
+  src.connect(bp); bp.connect(g); g.connect(master);
+  src.start(when); src.stop(when + 0.07);
+}
+// How many sector edges went past the pointer between two frames, and a clack for each of them.
+// The pointer sits at the top, canvas angle -90, so an edge is under it when rotation + 90 is a whole
+// number of sectors. The flapper and the clack both come from here, so they move together.
+function tickEdges(prevRot, nowRot, dt){
+  if(!N || dt <= 0) return;
+  const step = 360/N;
+  const n = Math.floor((nowRot + 90)/step) - Math.floor((prevRot + 90)/step);
+  if(n <= 0) return;
+  const k = Math.max(0, Math.min(1, ((nowRot - prevRot)/dt)/SPIN_VMAX));
+  pokePointer(k);                               // the flapper takes the knock even with the sound off
+  if(muted) return;
+  const ac = audioCtx(); if(!ac) return;
+  const m = Math.min(n, 4);                     // past four in one frame the ear hears a buzz anyway
+  const t0 = ac.currentTime;
+  for(let i=0;i<m;i++) clack(ac, t0 + i*dt/m, k);
+}
+// The pointer is hinged at its base and rides on the sectors like the flapper of a peg wheel:
+// an edge drags it along the way the wheel turns, it springs back once the edge clears, and on the
+// way back it slaps against the rim instead of swinging freely.
+const ptr = $(".pointer");
+const PEG_K = 950, PEG_C = 15;                  // spring and damping of the hinge
+const PEG_MAX = 20, PEG_BACK = 3;              // how far an edge can drag it, and how far back past rest it may go
+let pegA = 0, pegV = 0, pegOn = false, pegLast = 0;
+function pokePointer(k){
+  if(REDUCED) return;
+  pegV = Math.min(950, pegV + 175 + 300*k);     // the faster the edge, the harder it drags
+  if(!pegOn){ pegOn = true; pegLast = performance.now(); requestAnimationFrame(pegStep); }
+}
+function pegStep(now){
+  const dt = Math.min((now - pegLast)/1000, 0.05); pegLast = now;
+  pegV += (-PEG_K*pegA - PEG_C*pegV)*dt;
+  pegA += pegV*dt;
+  if(pegA > PEG_MAX){ pegA = PEG_MAX; pegV = 0; }              // held against the edge that is pushing it
+  else if(pegA < -PEG_BACK){ pegA = -PEG_BACK; pegV *= -0.25; }  // and it bumps the rim on the way back
+  if(Math.abs(pegA) < 0.05 && Math.abs(pegV) < 0.6){
+    pegA = pegV = 0; pegOn = false;
+    ptr.style.transform = "translateX(-50%)";
+    return;
+  }
+  ptr.style.transform = "translateX(-50%) rotate(" + (-pegA).toFixed(2) + "deg)";
+  requestAnimationFrame(pegStep);
+}
+function setMuted(on, remember){
+  muted = on;
+  const b = $("#sndBtn");
+  b.classList.toggle("off", muted);
+  b.setAttribute("aria-pressed", muted ? "false" : "true");
+  b.title = t("sound"); b.setAttribute("aria-label", t("sound"));
+  if(remember) setPref("mute", muted);
+}
+
+/* ===================== RANDOM.ORG ===================== */
+// Plain-text HTTP API of random.org; CORS-enabled. Returns array of integers in [min,max].
+async function randomOrg(num, min, max, timeoutMs=8000){
+  const url = `https://www.random.org/integers/?num=${num}&min=${min}&max=${max}&col=1&base=10&format=plain&rnd=new`;
+  const ctl = new AbortController(); const tm = setTimeout(()=>ctl.abort(), timeoutMs);
+  try{
+    const r = await fetch(url, {signal: ctl.signal, cache:"no-store"});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const txt = await r.text();
+    const nums = txt.trim().split(/\s+/).map(Number);
+    if(nums.length!==num || nums.some(n=>!Number.isInteger(n)||n<min||n>max)) throw new Error("bad payload");
+    return nums;
+  } finally { clearTimeout(tm); }
+}
+function localRandom(num, min, max){
+  const out=[], range=max-min+1, buf=new Uint32Array(num); crypto.getRandomValues(buf);
+  for(let i=0;i<num;i++) out.push(min + (buf[i] % range));
+  return out;
+}
+async function getRandom(num, min, max){
+  try{ return {nums: await randomOrg(num,min,max), source:"random.org"}; }
+  catch(e){ console.warn("random.org failed, falling back:", e); return {nums: localRandom(num,min,max), source:"local"}; }
+}
+function setStatus(kind, key){
+  const d=$("#dot"); d.className="dot "+kind;
+  const s=$("#statusText"); s.dataset.i18n=key; s.textContent=t(key);
+}
+
+/* ===================== SECTOR ORDER ===================== */
+// `order` is the wheel as it currently stands: one entry per sector, in wheel order, holding
+// the index of its mastery in CL. Knocking a mastery out is just dropping it from this list.
+function setWheel(idxs){ order = idxs; N = order.length; STEP = N ? 2*Math.PI/N : 0; drawWheel(); }
+// The sectors are laid out afresh on every page load and every new run. A random comparator is
+// enough here: this is only the visual arrangement, the drawn sector still comes from random.org.
+function initOrder(){ setWheel(liveIdx().sort(()=>Math.random()-0.5)); }
+
+/* ===================== LINE-UP ===================== */
+// Masteries can be taken off the wheel by hand. The choice survives a reload; two always stay on,
+// since a wheel with one sector has nothing to draw.
+const MIN_ON_WHEEL = 2;
+function loadExcluded(){ excluded = new Set(Array.isArray(prefs.off) ? prefs.off.filter(k=>CL.some(c=>c.key===k)) : []); }
+function saveExcluded(){
+  if(excluded.size) setPref("off", Array.from(excluded));
+  else { delete prefs.off; savePrefs(); }
+}
+function liveIdx(){ return CL.map((_,i)=>i).filter(i=>!excluded.has(CL[i].key)); }
+function toggleOnWheel(i){
+  if(spinning) return;
+  const k = CL[i].key;
+  if(excluded.has(k)) excluded.delete(k);
+  else if(liveIdx().length > MIN_ON_WHEEL) excluded.add(k);
+  else return;                                 // the last two cannot be taken off
+  saveExcluded();
+  renderRoster();
+  newRun();                                    // the wheel is a different wheel now, so the run starts over
+}
+function putAllBack(){
+  if(spinning || !excluded.size) return;
+  excluded.clear(); saveExcluded(); renderRoster(); newRun();
+}
+function renderRoster(){
+  const box = $("#pick"); if(!box) return;
+  const live = liveIdx().length;
+  $("#rosterCount").textContent = live + " / " + CL.length;
+  $("#rosterAll").disabled = spinning || !excluded.size;
+  box.innerHTML = "";
+  CL.forEach((c,i)=>{
+    const off = excluded.has(c.key);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = off ? "off" : "";
+    b.setAttribute("aria-pressed", off ? "false" : "true");
+    b.disabled = spinning || (!off && live <= MIN_ON_WHEEL);
+    const im = document.createElement("img"); im.src = emblemUrl(c.key); im.alt = "";
+    const tx = document.createElement("span");
+    const nm = document.createElement("span"); nm.textContent = nameOf(c.key);
+    const sub = document.createElement("small"); sub.textContent = nameOf(c.cls);
+    tx.append(nm, sub);
+    b.append(im, tx);
+    b.addEventListener("click", ()=>toggleOnWheel(i));
+    box.appendChild(b);
+  });
+}
+// Which sector the pointer (fixed at the top of the wheel) is aiming at right now.
+function sectorUnderPointer(){
+  const stepDeg = 360/N;
+  const a = ((((-90 - rotation) % 360) + 360) % 360);
+  return CL[order[Math.floor(a/stepDeg) % N]];
+}
+
+/* ===================== SPIN ===================== */
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+function lockUI(on){
+  $("#spinBtn").disabled = on;
+  $("#hub").classList.toggle("busy", on);
+  $("#minSec").disabled = on;
+  document.querySelectorAll(".mode").forEach(b=>{ b.disabled = on; });
+  renderRoster();                              // the line-up cannot be edited mid-spin
+}
+// One label for the panel button and the wheel hub alike; which word it is depends on the run.
+function updateSpinLabels(){
+  const key = spinning ? "spinning"
+            : winner ? "restart"
+            : (mode === "elim" && outList.length) ? "spin_again" : "spin";
+  document.querySelectorAll('[data-i18n="spin"]').forEach(el=>{ el.textContent = t(key); });
+}
+async function spin(){
+  if(spinning) return;
+  if(winner){ newRun(); return; }        // once someone has won, the same click starts a new run
+  if(N < 2) return;
+  spinning = true; unlight(); drawWheel(); lockUI(true); updateSpinLabels(); hideTip();
+  audioCtx();                            // opened on the click itself, which is the gesture browsers ask for
+  setStatus("busy","status_fetch");
+  const run = startSpin(minSpin);   // the wheel moves on the next frame, before the request is even answered
+
+  // one call: [sector, jitter within the sector, extra full turns]
+  const {nums, source} = await getRandom(3, 0, 9999);
+  const pos = nums[0] % N;                    // drawn on the wheel itself, so knocked-out sectors cannot come up
+  const ci = order[pos], cls = CL[ci];
+  const jitter = (nums[1]/9999 - .5) * 0.8;   // -0.4..0.4 of a sector
+  const extraTurns = nums[2] % 2;             // 0 or 1 whole turn on top of the braking distance
+  setStatus(source==="random.org"?"ok":"warn", source==="random.org"?"status_ok":"status_fallback");
+
+  // in a knockout round the wheel picks who leaves, so with two left it is the other one whose art is needed
+  const last = (mode === "elim" && N === 2) ? CL[order[1-pos]] : null;
+  if(mode === "single" || last) preloadBg(last || cls);
+
+  // pointer is at top (-90deg). Sector centre (deg) = pos*step + step/2 (canvas angle, clockwise from +x).
+  const stepDeg = 360/N;
+  const centre = pos*stepDeg + stepDeg/2 + jitter*stepDeg;
+  run.land(-90 - centre, extraTurns);          // rotation that puts this sector under the pointer
+  await run.finished;
+
+  if(mode === "single"){
+    current = cls; nickname = ""; bar = [];
+    showResult(cls, true, "roll");             // the card flares like a win, but it is still "your mastery"
+    celebrate(nameOf(cls.key), pos);
+  }
+  else await knockOut(ci, cls);
+
+  spinning = false; lockUI(false); updateSpinLabels();
+}
+
+/* ===================== ELIMINATION ===================== */
+// The drawn sector burns off the wheel; when a single one is left, it is crowned.
+async function knockOut(ci, cls){
+  outList.unshift({ci: ci, place: N});         // it finishes in the place equal to how many were still in
+  current = cls; nickname = ""; bar = [];
+  showResult(cls, false, "out");
+  renderOut();
+  shake($(".wheel-wrap"));
+  burstOut(pointerSpot(), CLASS_COLORS[cls.cls], nameOf(cls.key));
+  await wait(700);                             // let the burst read before the wheel closes the gap
+  setWheel(order.filter(i => i !== ci));       // the remaining sectors widen to fill the gap
+  renderOut();
+  if(N === 1){
+    winner = CL[order[0]];
+    outList.unshift({ci: order[0], place: 1});
+    current = winner; nickname = ""; bar = [];
+    renderOut();
+    showResult(winner, true, "win");
+    celebrate(null, 0);                        // one sector left, so it is the whole wheel
+    await wait(500);
+  }
+}
+// Back to a full wheel, whichever mode we are in.
+function newRun(){
+  winner = null; outList = []; nickname = ""; bar = []; unlight();
+  initOrder();
+  current = sectorUnderPointer();
+  showResult(current, true, "pick");
+  renderOut(); updateSpinLabels();
+}
+function setMode(m){
+  if(spinning || m === mode) return;
+  mode = m;
+  document.querySelectorAll(".mode").forEach(b=>{
+    const on = b.dataset.mode === mode;
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  document.body.classList.toggle("elim", mode === "elim");
+  setPref("mode", mode);
+  newRun();
+}
+// The ladder: how many are still in, and everyone who is out, newest first.
+function renderOut(){
+  const box = $("#elimBox"); if(!box) return;
+  box.hidden = mode !== "elim";
+  if(box.hidden) return;
+  $("#liveCount").textContent = N;
+  const list = $("#chips"); list.innerHTML = "";
+  outList.forEach((o,i)=>{
+    const d = document.createElement("div");
+    d.className = "chip " + (o.place === 1 ? "win" : "gone") + (i === 0 ? " fresh" : "");
+    const num = document.createElement("i"); num.textContent = "#" + o.place;
+    d.append(num, document.createTextNode(nameOf(CL[o.ci].key)));
+    list.appendChild(d);
+  });
+}
+
+/* ===================== EFFECTS ===================== */
+// One full-screen canvas for the sparks; it only animates while something is alive on it.
+const fx = $("#fx"), fxx = fx.getContext("2d");
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let parts = [], fxLast = 0, fxOn = false;
+let fxMuted = false;                           // the effects switch; reduced motion is honoured on top of it
+function setEffects(off, remember){
+  fxMuted = off;
+  const b = $("#fxBtn");
+  b.classList.toggle("off", fxMuted);
+  b.setAttribute("aria-pressed", fxMuted ? "false" : "true");
+  b.title = t("effects"); b.setAttribute("aria-label", t("effects"));
+  if(fxMuted){                                 // whatever is in the air goes with it
+    parts = [];
+    fxx.clearRect(0, 0, innerWidth, innerHeight);
+    document.querySelectorAll(".fx-label").forEach(el=>el.remove());
+    document.querySelectorAll(".wheel-wrap").forEach(el=>el.classList.remove("shake","win"));
+    unlight(); drawWheel();
+  }
+  if(remember) setPref("fx", !fxMuted);
+}
+function fxSize(){
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  fx.width = Math.round(innerWidth*d); fx.height = Math.round(innerHeight*d);
+  fxx.setTransform(d,0,0,d,0,0);
+}
+function fxRun(){ if(fxOn || !parts.length) return; fxOn = true; fxLast = performance.now(); requestAnimationFrame(fxStep); }
+function fxStep(now){
+  const dt = Math.min(Math.max((now - fxLast)/1000, 0), 0.05); fxLast = now;
+  fxx.clearRect(0,0,innerWidth,innerHeight);
+  fxx.globalCompositeOperation = "lighter";
+  parts = parts.filter(p=>{ p.t += dt; if(p.t >= p.life) return false; drawPart(p, dt); return true; });
+  fxx.globalCompositeOperation = "source-over"; fxx.globalAlpha = 1;
+  if(parts.length) requestAnimationFrame(fxStep);
+  else { fxOn = false; fxx.clearRect(0,0,innerWidth,innerHeight); }
+}
+function drawPart(p, dt){
+  const k = 1 - p.t/p.life;
+  if(p.type === "ring"){                       // a shockwave: quick out, then it eases and fades
+    const r = Math.max(0, p.r0 + (p.r1 - p.r0)*(1 - k*k*k));
+    fxx.globalAlpha = k*k*0.9; fxx.lineWidth = Math.max(1, p.w*k); fxx.strokeStyle = p.c;
+    fxx.beginPath(); fxx.arc(p.x, p.y, r, 0, 6.283); fxx.stroke();
+    fxx.globalAlpha = 1; return;
+  }
+  p.vy += p.g*dt; p.vx -= p.vx*p.drag*dt; p.vy -= p.vy*p.drag*dt;
+  p.x += p.vx*dt; p.y += p.vy*dt;
+  const a = Math.min(1, k*1.7);
+  if(p.type === "shard"){
+    p.a += p.va*dt;
+    fxx.globalAlpha = a; fxx.fillStyle = p.c;
+    fxx.save(); fxx.translate(p.x, p.y); fxx.rotate(p.a); fxx.fillRect(-p.s/2, -p.s/3, p.s, p.s/1.6); fxx.restore();
+  } else {
+    const r = Math.max(.6, p.s*k);
+    fxx.globalAlpha = a; fxx.fillStyle = p.c;
+    fxx.beginPath(); fxx.arc(p.x, p.y, r, 0, 6.283); fxx.fill();
+    fxx.globalAlpha = a*0.22;                  // a soft halo around each ember
+    fxx.beginPath(); fxx.arc(p.x, p.y, r*3.4, 0, 6.283); fxx.fill();
+  }
+  fxx.globalAlpha = 1;
+}
+function ring(x,y,r0,r1,c,life,w){ parts.push({type:"ring",x:x,y:y,r0:r0,r1:r1,c:c,w:w,t:0,life:life}); }
+function spark(x,y,ang,sp,c,life,s,g,drag){
+  parts.push({type:"spark",x:x,y:y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,c:c,s:s,g:g,drag:drag,t:0,life:life});
+}
+function shard(x,y,vx,vy,c,life,s,g,drag){
+  parts.push({type:"shard",x:x,y:y,vx:vx,vy:vy,c:c,s:s,g:g,drag:drag,a:Math.random()*6.283,va:(Math.random()-.5)*12,t:0,life:life});
+}
+function wheelRect(){ return $(".wheel-wrap").getBoundingClientRect(); }
+function pointerSpot(){ const r = wheelRect(); return {x: r.left + r.width/2, y: r.top + r.height*0.05}; }
+function hubSpot(){ const r = wheelRect(); return {x: r.left + r.width/2, y: r.top + r.height/2}; }
+function shake(elm){ if(fxMuted) return; elm.classList.remove("shake"); void elm.offsetWidth; elm.classList.add("shake"); }
+function floatLabel(p, text, kind){
+  const d = document.createElement("div");
+  d.className = "fx-label " + kind; d.textContent = text;
+  d.style.left = p.x + "px"; d.style.top = p.y + "px";
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(), kind === "win" ? 2600 : 1600);
+}
+// A sector burning away under the pointer, in the colours of its class.
+function burstOut(p, cols, name){
+  if(fxMuted) return;
+  floatLabel(p, name, "out");
+  if(REDUCED) return;
+  const pal = [(cols||[])[2] || "#d2b06a", (cols||[])[0] || "#7a5a22", "#ff9a3c", "#ffd36b", "#fff0c4"];
+  ring(p.x, p.y, 8, 170, "#ffce85", .55, 9);
+  ring(p.x, p.y, 8, 300, pal[0], .8, 5);
+  for(let i=0;i<110;i++){
+    const a = Math.random()*6.283, sp = 120 + Math.pow(Math.random(), .6)*720;
+    spark(p.x, p.y, a, sp, pal[i%pal.length], .55 + Math.random(), 1.5 + Math.random()*3, 900, .9);
+  }
+  for(let i=0;i<22;i++){                       // heavier debris, thrown up and falling back
+    const a = Math.random()*6.283, sp = 160 + Math.random()*520;
+    shard(p.x, p.y, Math.cos(a)*sp, Math.sin(a)*sp - 140, i%2 ? pal[0] : pal[1], 1.1 + Math.random()*.8, 7 + Math.random()*13, 1400, .35);
+  }
+  fxRun();
+}
+// The winner: its sector on the wheel is switched on and the name rises off the hub. `label` is the
+// name to fly up — the winner's own after a single roll, the word otherwise; `pos` is its sector.
+function celebrate(label, pos){
+  if(fxMuted) return;
+  const p = hubSpot(), w = $(".wheel-wrap");
+  w.classList.remove("win"); void w.offsetWidth; w.classList.add("win");
+  floatLabel(p, label || t("winner"), "win");
+  activateSector(pos);
+}
+
+/* ===================== RESULT / BACKGROUND ===================== */
+function bgUrl(c){ return `assets/bg/${c.key}.webp`; }
+function preloadBg(c){ const im=new Image(); im.src=bgUrl(c); im.decoding="async"; }
+function swapBackground(c){
+  const a=$("#bgA"), b=$("#bgB");
+  const next = bgToggle ? a : b, prev = bgToggle ? b : a; bgToggle = !bgToggle;
+  const im = new Image();
+  im.onload = ()=>{
+    next.style.backgroundImage = `url("${bgUrl(c)}")`;
+    next.classList.remove("show"); void next.offsetWidth;          // restart the slow settle-in
+    next.classList.add("show"); prev.classList.remove("show");
+  };
+  im.src = bgUrl(c);
+}
+function setAccent(c){
+  const col = CLASS_COLORS[c.cls][2];
+  document.documentElement.style.setProperty("--accent", col);
+  $("#brandMark").src = emblemUrl(c.cls);
+}
+function showResult(c, changeBg, kind){
+  if(kind) resultKind = kind;
+  const res = $("#result");
+  res.classList.toggle("out", resultKind === "out");
+  res.classList.toggle("win", resultKind === "win" || resultKind === "roll");
+  // a name belongs to whoever you ended up with, so it waits for the winner in a knockout run
+  res.classList.toggle("locked", mode === "elim" && resultKind !== "win");
+  $("#resLabel").textContent = resultKind === "win" ? t("winner")
+                             : resultKind === "out" ? t("eliminated") : t("your_mastery");
+  $("#ascName").textContent = nameOf(c.key);
+  $("#chrName").textContent = nameOf(c.cls);
+  $("#medal").src = emblemUrl(c.key);
+  $("#medal").alt = nameOf(c.key);
+  res.classList.add("show");
+  const nk=$("#nick");
+  if(nickname){ nk.textContent = nickname; nk.classList.remove("empty"); $("#copyBtn").disabled=false; }
+  else { nk.textContent = t("nick_empty"); nk.classList.add("empty"); $("#copyBtn").disabled=true; }
+  $("#copyBtn").textContent = t("copy");
+  setAccent(c);
+  renderBuild(c);
+  if(changeBg) swapBackground(c);
+}
+
+/* ===================== BUILD SKETCH ===================== */
+// Every skill of the class: the ones unlocked by level, the class passive tree, and all three
+// masteries — the one on show first and lit, the other two after it. Mastery skills of the other
+// two masteries belong to those masteries alone, so they are shown but cannot go on the bar.
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function iconUrl(id){ return `assets/skills/${id}.webp`; }
+// the starting skills carry level 0 in the data; in game they are there from level 1
+function reqText(s){ return s[2] === "M" ? t("req_ms") : s[2] === "L" ? t("req_lvl", {n: Math.max(1, s[1])}) : t("req_pts", {n: s[1]}); }
+// Skills of a mastery key, or of the class ("base"/"tree"), as [id, requirement, kind] triples.
+function skillsOfMastery(key){ return CL.find(c=>c.key===key).skills; }
+function available(c){                         // everything this mastery can put on its bar
+  const k = CLS[c.cls];
+  const own = [].concat(k.base, k.tree, c.skills);
+  const others = k.m.filter(m=>m!==c.key).flatMap(m=>skillsOfMastery(m).filter(s=>s[2] !== "M"));
+  return own.concat(others);
+}
+function isLocked(c, s, owner){ return s[2] === "M" && owner !== c.key; }
+function renderBuild(c){
+  const k = CLS[c.cls];
+  $("#bEmblem").src = emblemUrl(c.key); $("#bEmblem").alt = nameOf(c.key);
+  $("#bName").textContent = nameOf(c.key);
+  $("#bCls").textContent = nameOf(c.cls);
+  $("#bDesc").textContent = (LE.desc[lang] || LE.desc.en)[c.key] || "";
+  const ul = $("#bBonus"); ul.innerHTML = "";
+  ((LE.bonus[lang] || LE.bonus.en)[c.key] || []).forEach(b=>ul.appendChild(el("li", "", b)));
+  // the mastery skill, featured under the bonuses
+  const ms = c.skills.find(s=>s[2]==="M");
+  const box = $("#bMs"); box.innerHTML = "";
+  if(ms){
+    const im = el("img"); im.src = iconUrl(ms[0]); im.alt = "";
+    const tx = el("div"); tx.append(el("small", "", t("req_ms")), el("b", "", skName(ms[0])));
+    box.append(im, tx);
+    bindTip(box, ms, c.key, c);
+    box.onclick = ()=>toggleBar(ms[0], box);
+  }
+  // groups: yours, the class skills, the class tree, the other two masteries
+  const gs = $("#groups"); gs.innerHTML = "";
+  const addGroup = (title, sub, emblem, list, owner, cls)=>{
+    const g = el("div", "group" + (cls ? " " + cls : ""));
+    const h = el("div", "g-head");
+    if(emblem){ const im = el("img"); im.src = emblemUrl(emblem); im.alt = ""; h.appendChild(im); }
+    const tx = el("div"); tx.append(el("div", "g-title", title), el("div", "g-sub", sub)); h.appendChild(tx);
+    g.appendChild(h);
+    const tiles = el("div", "tiles");
+    list.forEach(s=>tiles.appendChild(tile(s, owner, c)));
+    g.appendChild(tiles);
+    gs.appendChild(g);
+  };
+  addGroup(nameOf(c.key), t("sub_mine"), c.key, c.skills, c.key, "mine");
+  addGroup(t("g_base"), t("g_base_sub"), c.cls, k.base.slice().sort((a,b)=>a[1]-b[1]), "base");
+  addGroup(t("g_tree", {c: nameOf(c.cls)}), t("g_tree_sub"), c.cls, k.tree, "tree");
+  k.m.filter(m=>m!==c.key).forEach(m=>addGroup(nameOf(m), t("sub_other", {c: nameOf(c.cls)}), m, skillsOfMastery(m), m, "other"));
+  bar = bar.filter(id=>available(c).some(s=>s[0]===id));
+  renderBar();
+}
+function tile(s, owner, c){
+  const b = el("button", "tile"); b.type = "button"; b.dataset.id = s[0];
+  const locked = isLocked(c, s, owner);
+  if(locked) b.classList.add("locked");
+  if(bar.includes(s[0])) b.classList.add("on");
+  const im = el("img"); im.src = iconUrl(s[0]); im.alt = ""; im.loading = "lazy";
+  const tx = el("span"); tx.style.minWidth = "0";
+  tx.append(el("span", "tn", skName(s[0])), el("span", "tr" + (s[2]==="M" ? " ms" : ""), reqText(s)));
+  b.append(im, tx);
+  b.setAttribute("aria-pressed", bar.includes(s[0]) ? "true" : "false");
+  bindTip(b, s, owner, c);
+  b.addEventListener("click", ()=>{ if(!locked) toggleBar(s[0], b); else showTip(b, s, owner, c, true); });
+  return b;
+}
+
+/* ---- skill bar ---- */
+function renderBar(){
+  const box = $("#slots"); box.innerHTML = "";
+  for(let i=0;i<BAR_MAX;i++){
+    const id = bar[i];
+    const b = el("button", "slot" + (id ? " filled" : "")); b.type = "button"; b.dataset.n = i + 1;
+    if(id){
+      const im = el("img"); im.src = iconUrl(id); im.alt = skName(id); b.appendChild(im);
+      b.title = skName(id);
+      b.addEventListener("click", ()=>toggleBar(id));
+    } else b.disabled = true;
+    box.appendChild(b);
+  }
+  const names = $("#barNames"); names.innerHTML = "";
+  if(bar.length){
+    bar.forEach((id, i)=>{ if(i) names.appendChild(document.createTextNode(" · ")); names.appendChild(el("b", "", skName(id))); });
+  } else names.appendChild(el("span", "muted", t("tap_hint")));
+  $("#barClear").disabled = !bar.length;
+  $("#barCopy").disabled = !bar.length;
+  document.querySelectorAll(".tile[data-id]").forEach(tl=>{
+    const on = bar.includes(tl.dataset.id);
+    tl.classList.toggle("on", on); tl.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+function toggleBar(id, src){
+  const i = bar.indexOf(id);
+  if(i >= 0) bar.splice(i, 1);
+  else if(bar.length >= BAR_MAX){ flashBarFull(); return; }
+  else bar.push(id);
+  renderBar();
+  if(i < 0){ const s = $("#slots").children[bar.length - 1]; if(s && !REDUCED){ s.classList.add("pop"); } }
+}
+function flashBarFull(){
+  const n = $("#barNames"); n.innerHTML = ""; n.appendChild(el("span", "muted", t("bar_full")));
+  clearTimeout(flashBarFull.tm); flashBarFull.tm = setTimeout(renderBar, 1800);
+}
+// Five at random from what this mastery can use, the mastery skill always among them, drawn on random.org.
+async function randomBar(){
+  if(!current) return;
+  const btn = $("#barRandom"); btn.disabled = true; setStatus("busy","status_fetch");
+  const pool = available(current).map(s=>s[0]).filter((id, i, a)=>a.indexOf(id)===i);
+  const ms = current.skills.find(s=>s[2]==="M");
+  const pick = ms ? [ms[0]] : [];
+  const rest = pool.filter(id=>!pick.includes(id));
+  const {nums, source} = await getRandom(BAR_MAX, 0, 9999);
+  setStatus(source==="random.org"?"ok":"warn", source==="random.org"?"status_ok":"status_fallback");
+  let n = 0;
+  while(pick.length < BAR_MAX && rest.length){ pick.push(rest.splice(nums[n++ % nums.length] % rest.length, 1)[0]); }
+  bar = pick; renderBar();
+  if(!REDUCED) [...$("#slots").children].forEach((s, i)=>setTimeout(()=>s.classList.add("pop"), i*70));
+  btn.disabled = false;
+}
+async function copyBuild(){
+  if(!current || !bar.length) return;
+  const text = `${nameOf(current.key)} (${nameOf(current.cls)}): ` + bar.map(skName).join(", ");
+  await copyText(text);
+  const b = $("#barCopy"); b.textContent = t("copied"); setTimeout(()=>b.textContent = t("bar_copy"), 1500);
+}
+
+/* ---- skill card tooltip ---- */
+const tipEl = $("#skTip");
+let tipFor = null;
+function bindTip(node, s, owner, c){
+  node.addEventListener("mouseenter", ()=>showTip(node, s, owner, c));
+  node.addEventListener("mouseleave", ()=>{ if(!tipPinned) hideTip(); });
+  node.addEventListener("focus", ()=>showTip(node, s, owner, c));
+  node.addEventListener("blur", ()=>{ if(!tipPinned) hideTip(); });
+  node.addEventListener("pointerup", e=>{ if(e.pointerType !== "mouse") showTip(node, s, owner, c, true); });
+}
+let tipPinned = false;
+function hideTip(){ tipEl.classList.remove("on", "pinned"); tipFor = null; tipPinned = false; }
+function showTip(node, s, owner, c, pin){
+  tipFor = node; tipPinned = !!pin;
+  tipEl.classList.toggle("pinned", tipPinned);
+  const id = s[0];
+  tipEl.innerHTML = "";
+  const head = el("div", "th");
+  const im = el("img"); im.src = iconUrl(id); im.alt = "";
+  const tx = el("div");
+  const mana = LE.mana[id];
+  const meta = reqText(s) + (mana ? " · " + t("mana") + " " + mana : "");
+  tx.append(el("b", "", skName(id)), el("small", s[2]==="M" ? "ms" : "", meta));
+  head.append(im, tx);
+  tipEl.appendChild(head);
+  const body = el("div", "tb");
+  const html = cardOf(id);
+  if(html) body.innerHTML = html;             // lastepochtools' card, reduced at build time to plain div/span/ul/li with known classes
+  else {
+    body.classList.add("wait"); body.textContent = t("loading");
+    const lg = lang;
+    loadCards(lg).then(()=>{ if(tipFor === node && lang === lg && cardOf(id)) showTip(node, s, owner, c, tipPinned); }, ()=>{});
+  }
+  tipEl.appendChild(body);
+  if(isLocked(c, s, owner)) tipEl.appendChild(el("div", "foot", t("only_for", {m: nameOf(owner)})));
+  placeTip(node);
+  tipEl.classList.add("on");
+}
+function placeTip(node){
+  const r = node.getBoundingClientRect(), vw = document.documentElement.clientWidth, vh = window.innerHeight;
+  tipEl.style.left = "8px"; tipEl.style.top = "0px";
+  const tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+  const fitsR = r.right + 12 + tw <= vw - 8, fitsL = r.left - 12 - tw >= 8;
+  let left, top;
+  if(fitsR || fitsL){                                          // beside the tile, right first
+    left = fitsR ? r.right + 12 : r.left - tw - 12;
+    top = r.top + r.height/2 - th/2;
+  } else {                                                     // a phone: under the tile, or above it
+    left = Math.max(8, Math.min(vw - tw - 8, r.left + r.width/2 - tw/2));
+    top = r.bottom + 10;
+    if(top + th > vh - 8 && r.top - th - 10 >= 8) top = r.top - th - 10;
+  }
+  top = Math.max(8, Math.min(top, vh - th - 8));
+  tipEl.style.left = Math.round(left) + "px";
+  tipEl.style.top = Math.round(top) + "px";
+}
+
+/* ===================== NICKNAME ===================== */
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); }
+function buildNick(r, cls){
+  const P=NICK.prefixes, Rt=NICK.roots, S=NICK.suffixes, E=NICK.epithets[cls]||[];
+  const root = Rt[r[0]%Rt.length], suf = S[r[1]%S.length], pre = P[r[2]%P.length], ep = E[r[3]%E.length], root2 = Rt[r[4]%Rt.length];
+  const pattern = r[5] % 5;
+  let name;
+  switch(pattern){
+    case 0: name = cap(root+suf); break;                          // Kaeldor
+    case 1: name = cap(pre)+root.toLowerCase()+suf; break;          // Ashkaeldor
+    case 2: name = cap(root+suf)+ep; break;                         // KaeldorIronwall
+    case 3: name = cap(root)+root2.toLowerCase()+suf; break;        // Kaelvordor
+    default: name = ep+cap(root); break;                            // NightbladeKael
+  }
+  name = name.replace(/[^A-Za-z]/g,"");
+  if(name.length>16) name = cap(root+suf);
+  if(name.length<3) name = cap(root+suf+suf);
+  return name;
+}
+async function genNick(){
+  if(!current) return;
+  const btn=$("#nickBtn"); btn.disabled=true; setStatus("busy","status_fetch");
+  const {nums, source} = await getRandom(6, 0, 9999);
+  setStatus(source==="random.org"?"ok":"warn", source==="random.org"?"status_ok":"status_fallback");
+  nickname = buildNick(nums, current.cls);
+  const nk=$("#nick"); nk.textContent=nickname; nk.classList.remove("empty");
+  $("#copyBtn").disabled=false; $("#copyBtn").textContent=t("copy");
+  btn.disabled=false;
+}
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); }
+}
+async function copyNick(){
+  if(!nickname) return;
+  await copyText(nickname);
+  const b=$("#copyBtn"); b.textContent=t("copied"); setTimeout(()=>b.textContent=t("copy"),1500);
+}
+
+/* ===================== CHANNEL AVATAR ===================== */
+// The badge shows the channel's own Twitch picture. decapi answers with the current CDN url as
+// plain text; unavatar serves a picture directly. Both are optional — the glyph stays if neither
+// answers, so the badge never waits on a third party.
+const AVATAR_URL = "https://decapi.me/twitch/avatar/blindermine";
+const AVATAR_IMG = "https://unavatar.io/twitch/blindermine";
+function tryImg(img, url){ return new Promise(res=>{ img.onload=()=>res(true); img.onerror=()=>res(false); img.src=url; }); }
+async function loadChannelAvatar(){
+  const box = $(".shout-ico"), img = $("#shoutAva"); if(!box || !img) return;
+  let cdn = null;
+  try{
+    const ctl = new AbortController(); const tm = setTimeout(()=>ctl.abort(), 6000);
+    try{
+      const r = await fetch(AVATAR_URL, {signal: ctl.signal});
+      const txt = (await r.text()).trim();
+      if(r.ok && /^https:\/\/static-cdn\.jtvnw\.net\/[\w.\/-]+$/.test(txt)) cdn = txt;   // anything else is an error message
+    } finally { clearTimeout(tm); }
+  }catch(e){ console.warn("channel avatar lookup failed:", e); }
+  if(cdn && await tryImg(img, cdn)){ box.classList.add("has-ava"); return; }
+  if(await tryImg(img, AVATAR_IMG)) box.classList.add("has-ava");
+  else img.removeAttribute("src");
+}
+
+/* ===================== INIT ===================== */
+function clampSec(v){ return Number.isFinite(v) ? Math.max(2, Math.min(60, Math.round(v*2)/2)) : 4; }
+(function init(){
+  loadPrefs();
+  const sel=$("#lang");
+  LANGS.forEach(([code,label])=>{ const o=document.createElement("option"); o.value=code; o.textContent=label; sel.appendChild(o); });
+  let saved = prefs.lang || null;
+  if(!saved){
+    const nav=(navigator.language||"en").toLowerCase();
+    saved = LANGS.map(l=>l[0]).find(c=>nav.startsWith(c)) || "en";
+  }
+  lang = LANGS.some(l=>l[0]===saved) ? saved : "en";
+  sel.value=lang;
+  sel.addEventListener("change", ()=>{ lang = sel.value; setPref("lang", lang); hideTip(); applyLang(); });
+  const ms = $("#minSec");
+  minSpin = clampSec(parseFloat(prefs.minSpin)); ms.value = minSpin;
+  ms.addEventListener("change", ()=>{
+    minSpin = clampSec(parseFloat(ms.value)); ms.value = minSpin;
+    setPref("minSpin", minSpin);
+  });
+  setMuted(prefs.mute === true, false);
+  $("#sndBtn").addEventListener("click", ()=>{ setMuted(!muted, true); if(!muted) audioCtx(); });
+  setEffects(prefs.fx === false, false);
+  $("#fxBtn").addEventListener("click", ()=>setEffects(!fxMuted, true));
+  mode = prefs.mode === "elim" ? "elim" : "single";
+  document.body.classList.toggle("elim", mode === "elim");
+  document.querySelectorAll(".mode").forEach(b=>{
+    const on = b.dataset.mode === mode;
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    b.addEventListener("click", ()=>setMode(b.dataset.mode));
+  });
+  fxSize(); window.addEventListener("resize", ()=>{ fxSize(); hideTip(); });
+  window.addEventListener("scroll", ()=>{ if(tipFor) placeTip(tipFor); }, {passive:true});
+  loadChannelAvatar();
+  $("#spinBtn").addEventListener("click", spin);
+  $("#hub").addEventListener("click", spin);
+  canvas.addEventListener("click", spin);
+  $("#hub").addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); spin(); } });
+  document.addEventListener("click", e=>{ if(!e.target.closest(".tile,.ms-skill,.sk-tip")) hideTip(); });
+  document.addEventListener("keydown", e=>{ if(e.key === "Escape") hideTip(); });
+  $("#rosterAll").addEventListener("click", putAllBack);
+  $("#clearPrefs").addEventListener("click", ()=>{ clearPrefs(); location.reload(); });
+  $("#nickBtn").addEventListener("click", genNick);
+  $("#copyBtn").addEventListener("click", copyNick);
+  $("#barRandom").addEventListener("click", randomBar);
+  $("#barClear").addEventListener("click", ()=>{ bar = []; renderBar(); });
+  $("#barCopy").addEventListener("click", copyBuild);
+
+  loadExcluded();
+  initOrder();
+  applyLang();
+  current = sectorUnderPointer();
+  showResult(current, true, "pick");
+  renderOut(); updateSpinLabels();
+  // redraw once web fonts are ready so Cinzel is used on the wheel
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ fitCache.clear(); drawWheel(); });
+})();
+</script>
+</body>
+</html>
