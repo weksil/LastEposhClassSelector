@@ -24,15 +24,24 @@ Under the wheel, for the mastery on show:
 
 ## Season 5 and new classes
 
-Season 5, “Rage of the Frostborn”, starts on 1 October 2026 and adds no new class or mastery. It does add three new skills. Until lastepochtools has their data, they appear as dashed stubs in their mastery groups: the mastery emblem stands in for the icon, the tooltip says when the season starts, and the stub cannot go on the skill bar.
+The data is from Season 5, “Rage of the Frostborn” (1 October 2026). The season adds no new class or mastery, but it does add three skills and move two others:
 
-| Mastery | Skill |
+| Mastery | Change |
 |---|---|
-| Bladedancer | Dreamslash |
-| Paladin | Radiant Lance |
-| Shaman | Summon Tide Elemental |
+| Bladedancer | new **Dreamslash**, 10 points in the tree |
+| Paladin | new **Radiant Lance**, 15 points |
+| Shaman | new **Summon Tide Elemental**, 30 points |
+| Bladedancer | Synchronized Strike now needs 35 points (from 10) |
+| Paladin | Symbols of Hope now needs 35 points (from 15) |
 
-The stubs are listed in `UPCOMING` in `tools/meta.py`, with the season in `SEASON`. `build.py` drops a stub by itself once the data has a skill with the same English name, so after the season is out, re-harvesting and rebuilding replaces them with the real skills.
+Forge Guard's second mastery bonus changed as well: Stalwart now gives 10% armour and also stacks when you hit.
+
+**Stubs for announced skills.** A skill announced for a coming season can go into `UPCOMING` in `tools/meta.py`, with the season in `SEASON`. Until the data has it, it shows as a dashed stub in its mastery group:
+- the mastery emblem stands in for the icon;
+- the tooltip says when the season starts;
+- the stub cannot go on the skill bar.
+
+`build.py` drops a stub by itself once the data has a skill with the same English name. The list is empty now, since the three Season 5 skills are in the data.
 
 The page is ready for a class added later:
 - the wheel, line-up, build sketch and skill bar are all driven by `data/le.js`;
@@ -54,7 +63,7 @@ Language, mode, minimum spin, sound, effects and the wheel line-up live in one `
 
 ## Data
 
-- `data/le.js`: 5 classes, 15 masteries and 138 skills with their unlock requirements, mana costs, and the names, descriptions and mastery bonuses in 10 languages. It comes from the lastepochtools.com data (version145, Season 4 “Shattered Omens”): `classSkillSources`, `masterySkillSources`, `LEAbilities` and the `i18n/full/<lang>.json` dictionaries.
+- `data/le.js`: 5 classes, 15 masteries and 141 skills with their unlock requirements, mana costs, and the names, descriptions and mastery bonuses in 10 languages. It comes from the lastepochtools.com data (version150, Season 5 “Rage of the Frostborn”; the folder is `DATA_VERSION` in `tools/meta.py`): `classSkillSources`, `masterySkillSources`, `LEAbilities` and the `i18n/full/<lang>.json` dictionaries.
 - `data/skills/<lang>.js`: the skill cards, one file per language, loaded only when needed. They are captured from the rendered ability cards of lastepochtools.com and reduced to plain `div/span/ul/li` markup with a whitelist of classes; links, icons and inline styles are dropped.
 
 ### Rebuilding the data
@@ -69,7 +78,7 @@ The scripts are in `tools/`. Run them from inside that folder:
 ## Assets
 
 - `assets/emblem/*.webp`: the 15 mastery emblems and 5 class emblems from the class pages of lastepoch.com.
-- `assets/skills/*.webp`: 138 skill icons, cut from the lastepochtools.com icon sprite.
+- `assets/skills/*.webp`: 141 skill icons, cut from the lastepochtools.com icon sprite.
 - `assets/bg/*.webp`: page backgrounds. Eleventh Hour Games publishes no wide artwork per mastery, so each mastery gets an official piece that fits its theme, from the lastepoch.com media kit and class pages:
 
 | Mastery | Art |
