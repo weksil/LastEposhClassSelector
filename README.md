@@ -1,5 +1,11 @@
 # Mastery Roulette · Last Epoch
 
+<p align="center">
+  <a href="https://weksil.github.io/LastEposhClassSelector/">
+    <img src="https://img.shields.io/badge/%E2%96%B6%20Open%20the%20web%20version-c8a24a?style=for-the-badge&logoColor=white" alt="Open the web version" height="56">
+  </a>
+</p>
+
 A one-page site with a roulette wheel that picks one of the 15 Last Epoch masteries and lays out every skill of its class, so you can sketch a build right away. It follows the Ascendancy Roulette (`D:\tmp\Poe2ClassSelector`): same wheel, modes, sound and settings.
 
 - Open `index.html` in a browser, or serve the folder statically, e.g. `python -m http.server`.
